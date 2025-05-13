@@ -3,10 +3,11 @@
     "privateKey": "WJwi9bwCN+r2Tp6hpycq3H8XD8i17ZKWtk9Out1deUg=",
     "publicKey": "kgcUb8n8BrN0DcZsS0wtBhGQn70mRYq8O/XVmC9z6zo=",
     "address": "10.10.10.",
-    "dns": "8.8.8.8",
+    "dns": "1.1.1.1",
     "port": 51820,
     "preSharedKey": "True",
-    "endpoint": "quijije.cl"
+    "endpoint": "quijije.cl",
+    "persistentKeepalive": 0
   },
   "clients": {
     "104da332-8890-4dd1-97f0-bcb8f0f3941b": {
@@ -18,7 +19,7 @@
       "preSharedKey": "+0wVG/YMjzQVRuB85T0AO2OOF0zgxxIKkzgzUev/JYI=",
       "createdAt": "2025-04-11T23:05:52.903Z",
       "updatedAt": "2025-04-11T23:05:52.903Z",
-      "enabled": true
+      "enabled": false
     },
     "bb843a34-d786-4d68-850c-746d25bbf93d": {
       "id": "bb843a34-d786-4d68-850c-746d25bbf93d",
@@ -64,78 +65,17 @@
       "updatedAt": "2025-04-19T12:29:52.881Z",
       "enabled": true
     },
-    "1f2ebf28-0a35-4015-8597-cb1cae8a356c": {
-      "id": "1f2ebf28-0a35-4015-8597-cb1cae8a356c",
-      "name": "111",
+    "fac5eeef-f869-4959-88ac-0f36c4713144": {
+      "id": "fac5eeef-f869-4959-88ac-0f36c4713144",
+      "name": "ooo",
       "address": "10.10.10.7/32",
       "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
       "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
       "presharedKey": null,
-      "createdAt": "2025-05-13T02:15:47.503Z",
-      "updatedAt": "2025-05-13T02:15:47.503Z",
-      "endpoint": null,
-      "dns": null,
-      "persistentKeepalive": "25",
-      "allowedIPs": "10.10.10.7/32",
-      "enabled": true
-    },
-    "1be3e83f-7de9-4f57-a5d5-c1df89122e87": {
-      "id": "1be3e83f-7de9-4f57-a5d5-c1df89122e87",
-      "name": "sedfsd",
-      "address": "10.10.10.8/32",
-      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-      "presharedKey": null,
-      "createdAt": "2025-05-13T02:17:17.571Z",
-      "updatedAt": "2025-05-13T02:17:17.571Z",
-      "endpoint": null,
-      "dns": null,
-      "persistentKeepalive": "25",
-      "allowedIPs": "0.0.0.0/0 , ::/0",
-      "enabled": true
-    },
-    "8216b130-3a9b-4956-9e27-b6c11f7848c1": {
-      "id": "8216b130-3a9b-4956-9e27-b6c11f7848c1",
-      "name": "sef",
-      "address": "10.10.10.9/32",
-      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-      "presharedKey": null,
-      "createdAt": "2025-05-13T02:18:09.040Z",
-      "updatedAt": "2025-05-13T02:18:09.040Z",
-      "endpoint": "",
-      "dns": "",
-      "persistentKeepalive": "25",
-      "allowedIPs": "0.0.0.0/0, ::/0",
-      "enabled": true
-    },
-    "63748961-1f38-4d57-9067-a07b6435dc3d": {
-      "id": "63748961-1f38-4d57-9067-a07b6435dc3d",
-      "name": "juanito",
-      "address": "10.10.10.99/32",
-      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-      "presharedKey": null,
-      "createdAt": "2025-05-13T03:08:10.684Z",
-      "updatedAt": "2025-05-13T04:07:44.040Z",
-      "endpoint": "",
-      "dns": "8.8.8.8",
-      "persistentKeepalive": "0",
-      "allowedIPs": "0.0.0.0/0, ::/0",
-      "enabled": true
-    },
-    "f002d1e8-26c4-4e49-a1a0-2d0a7c7bfff1": {
-      "id": "f002d1e8-26c4-4e49-a1a0-2d0a7c7bfff1",
-      "name": "papapa",
-      "address": "10.10.10.10/32",
-      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-      "presharedKey": null,
-      "createdAt": "2025-05-13T04:11:40.744Z",
-      "updatedAt": "2025-05-13T04:11:40.744Z",
-      "endpoint": "",
-      "dns": "",
-      "persistentKeepalive": "25",
+      "createdAt": "2025-05-13T05:09:56.950Z",
+      "updatedAt": "2025-05-13T05:09:56.950Z",
+      "dns": "1.1.1.1",
+      "persistentKeepalive": 13,
       "allowedIPs": "0.0.0.0/0, ::/0",
       "enabled": true
     }
