@@ -175,11 +175,12 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
                 f"AllowedIPs = 0.0.0.0/0, ::/0\n"
             )
 
-            # Mostrar QR en consola
-            qr = qrcode.QRCode()
+            # Mostrar QR en consola con un marco blanco
+            qr = qrcode.QRCode(border=4)  # Ajustar el tamaño del borde
             qr.add_data(qr_config)
-            qr.print_ascii()  # Mostrar el QR en la consola
-            console.print("[green]Código QR mostrado en consola.[/green]")
+            qr.make(fit=True)
+            qr.print_ascii(invert=True)  # Invertir colores para mejor contraste
+            console.print("[green]Código QR mostrado en consola con un marco blanco.[/green]")
 
         elif option == "3":
             # Generar archivo de configuración
