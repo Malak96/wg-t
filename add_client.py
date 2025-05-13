@@ -17,7 +17,7 @@ except ImportError:
 console = Console()
 
 WG_CONFIG_FILE = "wg0.json"
-IP_SUBNET_PREFIX_DEFAULT = "10.10.10." # Fallback si no se puede derivar del servidor
+IP_SUBNET_PREFIX_DEFAULT = "10.10.10.1/24" # Fallback si no se puede derivar del servidor
 IP_START_OCTET = 2
 IP_MAX_OCTET = 254
 
@@ -28,7 +28,7 @@ def load_data(file_path):
         # Nueva estructura base con "server"
         return {
             "server": {
-                "address": IP_SUBNET_PREFIX_DEFAULT, # e.g., "10.10.10."
+                "address": IP_SUBNET_PREFIX_DEFAULT, # e.g., "10.10.10.1/24"
                 "dns": "1.1.1.1",
                 "PresharedKey": "True", # String "False" or "True"
                 "port": 51820,
@@ -167,7 +167,7 @@ def add_new_client(client_name):
             server_ip_part = addr_strip.split('/')[0]
             ip_parts = server_ip_part.split('.')
             if len(ip_parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in ip_parts):
-                ip_subnet_prefix = ".".join(ip_parts[:3]) + "."
+                ip_subnet_prefix = addr_strip
                 console.print(f"[info]Usando prefijo de IP derivado de la dirección del servidor: [cyan]{ip_subnet_prefix}[/cyan]")
             else:
                 console.print(f"[yellow]Advertencia:[/yellow] Formato de 'address' del servidor ('{addr_strip}') no es un IPv4 válido para derivar prefijo. Usando prefijo por defecto: [cyan]{IP_SUBNET_PREFIX_DEFAULT}[/cyan]")

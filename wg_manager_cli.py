@@ -4,6 +4,7 @@ import json
 import subprocess # Necesario para llamar a wg_conf.py
 import qrcode
 import psutil
+import ipaddress
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
@@ -242,12 +243,19 @@ def create_wg0_json():
     console.print("[bold green]Creando archivo wg0.json...[/bold green]")
 
     # Solicitar datos al usuario
-    address = Prompt.ask("Introduce la dirección IP base (por ejemplo, 10.10.10.)", default="10.10.10.")
+    while True:
+        address = Prompt.ask("Introduce la dirección IP completa con máscara:", default= "10.0.10.1/24")
+        try:
+            ipaddress.ip_network(address, strict=False)  # Validar formato CIDR
+            break
+        except ValueError:
+            console.print("[bold red]Error:[/bold red] Dirección IP inválida. Intenta de nuevo.")
+
     dns = Prompt.ask("Introduce el servidor DNS", default="1.1.1.1")
     port = Prompt.ask("Introduce el puerto", default="51820")
-    pre_shared_key = Confirm.ask("¿Deseas habilitar PresharedKey?", default=True)
-    endpoint = Prompt.ask("Introduce el endpoint", default="quijije.cl")
-    persistent_keepalive = Prompt.ask("Introduce el valor de persistentKeepalive (0 para deshabilitar)", default="0")
+    pre_shared_key = Confirm.ask("¿Deseas habilitar preSharedKey?", default=True)
+    endpoint = Prompt.ask("Introduce el endpoint", default="0.0.0.0")
+    persistent_keepalive = Prompt.ask("Introduce el valor de persistentKeepalive:", default="0")
 
     # Listar interfaces de red y solicitar selección
     interfaces = list_network_interfaces()
@@ -276,7 +284,7 @@ def create_wg0_json():
             "address": address,
             "dns": dns,
             "port": int(port),
-            "PresharedKey": str(pre_shared_key),
+            "preSharedKey": str(pre_shared_key),
             "endpoint": endpoint,
             "persistentKeepalive": int(persistent_keepalive),
             "interface": selected_interface

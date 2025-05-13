@@ -1,8 +1,8 @@
-
 import os
 import sys
 import json
 import datetime
+import ipaddress
 
 try:
     from rich.console import Console
@@ -73,7 +73,7 @@ def edit_client_interactive(client_uuid_to_edit):
     editable_fields = {
         "1": {"key": "name", "prompt": "Nuevo nombre"},
         "2": {"key": "dns", "prompt": "Nuevos DNS (separados por coma, ej: 1.1.1.1,8.8.8.8 o dejar vacío para ninguno)"},
-        "3": {"key": "address", "prompt": "Nueva Dirección IP (ej: 10.10.10.X/32)"},
+        "3": {"key": "address", "prompt": "Nueva Dirección IP completa con máscara (ej: 10.10.10.1/24)"},
         "4": {"key": "persistentKeepalive", "prompt": "Nuevo Persistent Keepalive (ej: 25 o 0 para desactivar)"},
         "5": {"key": "enabled", "prompt": "Habilitado (s/n)"}
         # La opción de eliminar se manejará por separado en el menú de acciones.

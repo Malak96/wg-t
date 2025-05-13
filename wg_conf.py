@@ -73,8 +73,8 @@ def generate_wg_config_string(server_config, clients_data, server_interface_name
     network_interface = server_config.get("interface", "<YOUR_PUBLIC_INTERFACE_eg_eth0>")
 
     # Reglas PostUp/PostDown (ejemplos, el usuario debe adaptarlas)
-    config_lines.append(f"PostUp =  iptables -t nat -A POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {network_interface} -j MASQUERADE; iptables -A INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;")
-    config_lines.append(f"PostDown =  iptables -t nat -D POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {network_interface} -j MASQUERADE; iptables -D INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;")
+    config_lines.append(f"PostUp =  iptables -t nat -A POSTROUTING -s {server_address_config.split('/')[0]} -o {network_interface} -j MASQUERADE; iptables -A INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;")
+    config_lines.append(f"PostDown =  iptables -t nat -D POSTROUTING -s {server_address_config.split('/')[0]} -o {network_interface} -j MASQUERADE; iptables -D INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;")
     """
     config_lines.append(f"# PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
     config_lines.append(f"# PostUp = ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
