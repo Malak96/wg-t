@@ -1,6 +1,7 @@
 import os
 import sys
 import json 
+import subprocess # Necesario para llamar a gw_conf.py
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
@@ -74,10 +75,8 @@ def display_clients():
             for i, cliente_data in enumerate(clientes):
                 num = str(i + 1)
                 name = cliente_data.get('name', '[italic dim]Sin Nombre[/italic dim]')
-                # 'json_key_uuid' es el UUID que es la clave en el JSON, añadido por list_load_data
-                # Si list_load_data no lo añade, y el UUID está en cliente_data['id'], usar eso.
-                # Asumiendo que list_load_data añade 'json_key_uuid' o que 'id' es el UUID principal.
-                uuid_display = cliente_data.get('json_key_uuid') or cliente_data.get('id', '[italic dim]N/A[/italic dim]')
+                # list_clients.load_data() añade la clave del JSON como 'uuid' en cada diccionario de cliente.
+                uuid_display = cliente_data.get('uuid', '[italic dim]N/A[/italic dim]')
                 ip_address = get_display_ip(cliente_data.get('address'))
                 summary_table.add_row(num, name, uuid_display, ip_address)
             
@@ -101,19 +100,13 @@ def display_clients():
             
             if 1 <= client_num <= len(clientes):
                 selected_client_data = clientes[client_num - 1]
-                # Necesitamos el UUID que es la clave en el JSON para la edición.
-                # Asumimos que list_clients.load_data() añade este UUID como 'json_key_uuid'
-                # o que el campo 'id' dentro de los datos del cliente es este UUID.
-                # Si list_clients.py añade 'uuid' (como en una versión anterior), usar eso.
-                # Por consistencia con edit_clients, buscaremos el 'id' interno del cliente.
-                client_uuid_for_edit = selected_client_data.get('id') 
-                if not client_uuid_for_edit:
-                    # Si 'id' no está, y list_clients.py añade la clave del JSON como 'uuid_archivo' o 'json_key_uuid'
-                    client_uuid_for_edit = selected_client_data.get('uuid_archivo') or selected_client_data.get('json_key_uuid')
+                # edit_clients.edit_client_interactive espera el UUID que es la clave en el JSON.
+                # list_clients.load_data() lo proporciona como el campo 'uuid'.
+                client_uuid_for_edit = selected_client_data.get('uuid')
 
                 if not client_uuid_for_edit:
                     console.print("[red]Error: No se pudo determinar el UUID del cliente para la edición.[/red]")
-                    console.print("[dim]Asegúrate de que el cliente tenga un campo 'id' o que 'list_clients.py' exponga el UUID principal.[/dim]")
+                    console.print("[dim]Esto puede indicar un problema con la carga de datos desde 'list_clients.py'.[/dim]")
                     continue
                 
                 edited = display_single_client_details_and_edit_option(selected_client_data, client_num, client_uuid_for_edit)
@@ -192,22 +185,38 @@ def main_menu():
         ))
         console.print("1. [bold green]Listar/Editar[/bold green] clientes")
         console.print("2. [bold yellow]Añadir[/bold yellow] un nuevo cliente")
-        console.print("3. [bold red]Salir[/bold red]")
+        console.print("3. [bold cyan]Generar Configuración WG (Servidor)[/bold cyan]")
+        console.print("4. [bold red]Salir[/bold red]")
         console.rule(style="dim blue")
         
-        choice = Prompt.ask("Selecciona una opción (1-3)", choices=["1", "2", "3"], default="3")
+        choice = Prompt.ask("Selecciona una opción (1-4)", choices=["1", "2", "3", "4"], default="4")
         
         if choice == '1':
             display_clients()
         elif choice == '2':
             prompt_add_new_client()
         elif choice == '3':
+            # Llamar al nuevo script gw_conf.py
+            script_path = os.path.join(current_dir, "gw_conf.py")
+            if not os.path.exists(script_path):
+                console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
+            else:
+                try:
+                    console.print(f"\n[cyan]Lanzando el generador de configuración del servidor...[/cyan]")
+                    # Usar sys.executable para asegurar que se usa el mismo intérprete de Python
+                    subprocess.run([sys.executable, script_path], check=True)
+                except FileNotFoundError: # Debería ser capturado por el os.path.exists, pero por si acaso
+                    console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
+                except subprocess.CalledProcessError as e:
+                    console.print(f"[bold red]Error:[/bold red] El script 'gw_conf.py' terminó con un error (código {e.returncode}).")
+                except Exception as e:
+                    console.print(f"[bold red]Error inesperado al ejecutar 'gw_conf.py':[/bold red] {e}")
+        elif choice == '4':
             console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
             break
         
         Prompt.ask("\n[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False, show_choices=False)
         console.clear()
-
 if __name__ == "__main__":
     if not os.path.exists(WG_CONFIG_FILE):
         console.print(f"[yellow]Advertencia:[/yellow] El archivo de configuración '[bold]{WG_CONFIG_FILE}[/bold]' no existe.")
