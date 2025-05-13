@@ -105,9 +105,9 @@ def generate_wg_config_string(server_config, clients_data, server_interface_name
                 config_lines.append("# PublicKey = <CLAVE_PUBLICA_DEL_CLIENTE_FALTA>")
                 console.print(f"[yellow]Advertencia:[/yellow] Cliente '{client_details.get('name', client_uuid)}' no tiene 'publicKey'.")
 
-            preshared_key = client_details.get("presharedKey")
+            preshared_key = client_details.get("PresharedKey")
             if preshared_key: # Se añade la PresharedKey solo si existe y tiene un valor.
-                              # Si client_details.get("presharedKey") devuelve None (ej. null en JSON) o una cadena vacía,
+                              # Si client_details.get("PresharedKey") devuelve None (ej. null en JSON) o una cadena vacía,
                               # la línea PresharedKey no se incluirá para este peer.
                 config_lines.append(f"PresharedKey = {preshared_key}")
 

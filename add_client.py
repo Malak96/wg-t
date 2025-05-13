@@ -30,7 +30,7 @@ def load_data(file_path):
             "server": {
                 "address": IP_SUBNET_PREFIX_DEFAULT, # e.g., "10.10.10."
                 "dns": "1.1.1.1",
-                "preSharedKey": "True", # String "False" or "True"
+                "PresharedKey": "True", # String "False" or "True"
                 "port": 51820,
                 "persistentKeepalive": 0 # Integer
             },
@@ -44,7 +44,7 @@ def load_data(file_path):
         console.print("Se procederá con una estructura base en memoria, pero el archivo original no se modificará hasta un guardado exitoso.")
         return {
             "server": { # Asegurar que server exista con defaults
-                "address": IP_SUBNET_PREFIX_DEFAULT, "dns": "1.1.1.1,8.8.8.8", "preSharedKey": "False", "persistentKeepalive": 25, "port": 51820},
+                "address": IP_SUBNET_PREFIX_DEFAULT, "dns": "1.1.1.1,8.8.8.8", "PresharedKey": "False", "persistentKeepalive": 25, "port": 51820},
             "clients": {}
         }
     except Exception as e:
@@ -204,8 +204,8 @@ def add_new_client(client_name):
 
     # PresharedKey
     preshared_key_to_set = None
-    # Leer de server.preSharedKey (string "True" or "False")
-    generate_psk_str = server_config.get("preSharedKey", "False") 
+    # Leer de server.PresharedKey (string "True" or "False")
+    generate_psk_str = server_config.get("PresharedKey", "False") 
     if str(generate_psk_str).lower() == "true":
         console.print("[info]Generando PresharedKey para el cliente según la configuración del servidor...[/info]")
         preshared_key_to_set = generate_preshared_key()
@@ -225,7 +225,7 @@ def add_new_client(client_name):
         "address": next_ip, # Guardar como cadena de texto
         "privateKey": private_key,
         "publicKey": public_key,
-        "presharedKey": preshared_key_to_set,
+        "PresharedKey": preshared_key_to_set,
         "createdAt": timestamp,
         "updatedAt": timestamp,
         "dns": client_dns_to_set, 

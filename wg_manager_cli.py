@@ -239,7 +239,7 @@ def create_wg0_json():
     address = Prompt.ask("Introduce la dirección IP base (por ejemplo, 10.10.10.)", default="10.10.10.")
     dns = Prompt.ask("Introduce el servidor DNS", default="1.1.1.1")
     port = Prompt.ask("Introduce el puerto", default="51820")
-    pre_shared_key = Confirm.ask("¿Deseas habilitar preSharedKey?", default=True)
+    pre_shared_key = Confirm.ask("¿Deseas habilitar PresharedKey?", default=True)
     endpoint = Prompt.ask("Introduce el endpoint", default="quijije.cl")
     persistent_keepalive = Prompt.ask("Introduce el valor de persistentKeepalive (0 para deshabilitar)", default="0")
 
@@ -254,7 +254,7 @@ def create_wg0_json():
             "address": address,
             "dns": dns,
             "port": int(port),
-            "preSharedKey": str(pre_shared_key),
+            "PresharedKey": str(pre_shared_key),
             "endpoint": endpoint,
             "persistentKeepalive": int(persistent_keepalive)
         },

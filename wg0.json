@@ -1,27 +1,68 @@
 {
   "server": {
-    "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-    "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-    "address": "9.9.9.",
-    "dns": "8.8.8.8",
-    "port": 44444,
-    "preSharedKey": "True",
-    "endpoint": "ff.com",
+    "privateKey": "WJwi9bwCN+r2Tp6hpycq3H8XD8i17ZKWtk9Out1deUg=",
+    "publicKey": "kgcUb8n8BrN0DcZsS0wtBhGQn70mRYq8O/XVmC9z6zo=",
+    "address": "10.10.10.",
+    "dns": "1.1.1.1",
+    "port": 51820,
+    "PresharedKey": "True",
+    "endpoint": "quijije.cl",
     "persistentKeepalive": 0
   },
   "clients": {
-    "31cb2036-3b53-408f-821d-17a2e5a8cf62": {
-      "id": "31cb2036-3b53-408f-821d-17a2e5a8cf62",
-      "name": "client",
-      "address": "9.9.9.2/32",
-      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
-      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
-      "presharedKey": null,
-      "createdAt": "2025-05-13T15:17:11.363Z",
-      "updatedAt": "2025-05-13T15:17:11.363Z",
-      "dns": "8.8.8.8",
-      "persistentKeepalive": 0,
-      "allowedIPs": "0.0.0.0/0, ::/0",
+    "104da332-8890-4dd1-97f0-bcb8f0f3941b": {
+      "id": "104da332-8890-4dd1-97f0-bcb8f0f3941b",
+      "name": "Angel",
+      "address": "10.10.10.2/32",
+      "privateKey": "0JAGdtFs++BRugm9FJwyEo20GbeqGKJNcGCc7rGFikY=",
+      "publicKey": "xfjm0Ma3OJhmf9A+dZImePPMgb2pnVd64pcRtMI0zxU=",
+      "PresharedKey": "+0wVG/YMjzQVRuB85T0AO2OOF0zgxxIKkzgzUev/JYI=",
+      "createdAt": "2025-04-11T23:05:52.903Z",
+      "updatedAt": "2025-04-11T23:05:52.903Z",
+      "enabled": false
+    },
+    "bb843a34-d786-4d68-850c-746d25bbf93d": {
+      "id": "bb843a34-d786-4d68-850c-746d25bbf93d",
+      "name": "NoteHP",
+      "address": "10.10.10.3/32",
+      "privateKey": "kFxpf/Q45fjqc56gWDmHSPRc9HJfvkknG5iPQWdDBEE=",
+      "publicKey": "KbBeHpJRTlW4cJKRnJVEguvqUx88Vld+m47sOW74Nm0=",
+      "PresharedKey": "sfAjJ/70ZJC5FCcd1t2gKTBn+vF+yy0ibCaQsCWohKw=",
+      "createdAt": "2025-04-11T23:06:03.578Z",
+      "updatedAt": "2025-04-11T23:06:03.578Z",
+      "enabled": true
+    },
+    "16606cb4-a148-413d-a586-24cde6f8f14e": {
+      "id": "16606cb4-a148-413d-a586-24cde6f8f14e",
+      "name": "NoteAcer",
+      "address": "10.10.10.4/32",
+      "privateKey": "MCrbjye10F2sTq+2lgOdGS2wj+bkaE8jtCcmS0gKe3g=",
+      "publicKey": "5VJ1cpSUraLN89bVByvJGD9gj4/hisPqhqN1cONZi1Y=",
+      "PresharedKey": "WbeYlfRFXTDt5XbyQDzBlQw+0bpbDLWA2LMmGQpO/80=",
+      "createdAt": "2025-04-11T23:06:10.926Z",
+      "updatedAt": "2025-04-11T23:06:10.926Z",
+      "enabled": true
+    },
+    "cc0679a0-934d-4a70-9d10-d5a1bd3d404d": {
+      "id": "cc0679a0-934d-4a70-9d10-d5a1bd3d404d",
+      "name": "Xiaomi",
+      "address": "10.10.10.5/32",
+      "privateKey": "eDmqSDnPu2PxppADkWN6IpGXPbypf1kjp/RAl4pT/HM=",
+      "publicKey": "0efFQbGEZKMMmLqueNaCzGBEq2tVse/aayLPIvWkzXA=",
+      "PresharedKey": "1x3Djg+bJ7kpa6Iv0wQcFYKOf8Af/dl1YI8WzYGcO+M=",
+      "createdAt": "2025-04-11T23:06:18.098Z",
+      "updatedAt": "2025-04-11T23:06:18.098Z",
+      "enabled": true
+    },
+    "8f59a5f9-89dd-4547-a87f-b57e893fa492": {
+      "id": "8f59a5f9-89dd-4547-a87f-b57e893fa492",
+      "name": "Oscar",
+      "address": "10.10.10.6/32",
+      "privateKey": "MKVkCu++t81USh8vGUPgdLq+dcf+J3ZA+IVNeFxp9Ew=",
+      "publicKey": "CHyvLJXxfPLqYplzmMn8HurDb3CtzC1RgMJQ4hO492Y=",
+      "PresharedKey": "SWJfuQQODBhYCaF0GMDxGL6b1PYE8iaGCK9ucmrxPDg=",
+      "createdAt": "2025-04-19T12:29:52.881Z",
+      "updatedAt": "2025-04-19T12:29:52.881Z",
       "enabled": true
     }
   }
