@@ -3,6 +3,7 @@ import sys
 import json 
 import subprocess # Necesario para llamar a wg_conf.py
 import qrcode
+import psutil
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
@@ -231,6 +232,11 @@ def generate_keys():
         console.print("[yellow]Usando placeholders para las claves.[/yellow]")
         return "PLACEHOLDER_PRIVATE_KEY_wg_error", "PLACEHOLDER_PUBLIC_KEY_wg_error"
 
+def list_network_interfaces():
+    """Lista las interfaces de red disponibles en el sistema."""
+    interfaces = psutil.net_if_addrs().keys()
+    return list(interfaces)
+
 def create_wg0_json():
     """Crea el archivo wg0.json con los datos proporcionados por el usuario."""
     console.print("[bold green]Creando archivo wg0.json...[/bold green]")
@@ -242,6 +248,22 @@ def create_wg0_json():
     pre_shared_key = Confirm.ask("¿Deseas habilitar PresharedKey?", default=True)
     endpoint = Prompt.ask("Introduce el endpoint", default="quijije.cl")
     persistent_keepalive = Prompt.ask("Introduce el valor de persistentKeepalive (0 para deshabilitar)", default="0")
+
+    # Listar interfaces de red y solicitar selección
+    interfaces = list_network_interfaces()
+    if not interfaces:
+        console.print("[bold red]Error:[/bold red] No se encontraron interfaces de red disponibles.")
+        return
+
+    console.print("[bold cyan]Interfaces de red disponibles:[/bold cyan]")
+    for i, iface in enumerate(interfaces, start=1):
+        console.print(f"{i}. {iface}")
+
+    selected_interface_index = Prompt.ask(
+        "Selecciona el número de la interfaz de red a usar",
+        choices=[str(i) for i in range(1, len(interfaces) + 1)]
+    )
+    selected_interface = interfaces[int(selected_interface_index) - 1]
 
     # Generar claves
     private_key, public_key = generate_keys()
@@ -256,7 +278,8 @@ def create_wg0_json():
             "port": int(port),
             "PresharedKey": str(pre_shared_key),
             "endpoint": endpoint,
-            "persistentKeepalive": int(persistent_keepalive)
+            "persistentKeepalive": int(persistent_keepalive),
+            "interface": selected_interface
         },
         "clients": {}
     }

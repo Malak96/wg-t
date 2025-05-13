@@ -69,18 +69,20 @@ def generate_wg_config_string(server_config, clients_data, server_interface_name
     listen_port = server_config.get("port", 51820)
     config_lines.append(f"ListenPort = {listen_port}")
 
+    # Obtener la interfaz de red desde la configuración
+    network_interface = server_config.get("interface", "<YOUR_PUBLIC_INTERFACE_eg_eth0>")
+
     # Reglas PostUp/PostDown (ejemplos, el usuario debe adaptarlas)
-    public_interface_placeholder = "<YOUR_PUBLIC_INTERFACE_eg_eth0>" # Placeholder
-    config_lines.append(f"PostUp =  iptables -t nat -A POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {public_interface_placeholder} -j MASQUERADE; iptables -A INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;")
-    config_lines.append(f"PostDown =  iptables -t nat -D POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {public_interface_placeholder} -j MASQUERADE; iptables -D INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;")
+    config_lines.append(f"PostUp =  iptables -t nat -A POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {network_interface} -j MASQUERADE; iptables -A INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;")
+    config_lines.append(f"PostDown =  iptables -t nat -D POSTROUTING -s {server_address_config.split('/')[0]}/24 -o {network_interface} -j MASQUERADE; iptables -D INPUT -p udp -m udp --dport {listen_port} -j ACCEPT; iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;")
     """
     config_lines.append(f"# PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
     config_lines.append(f"# PostUp = ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
     config_lines.append(f"# PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
     config_lines.append(f"# PostDown = ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {public_interface_placeholder} -j MASQUERADE")
     config_lines.append("SaveConfig = false # O true si deseas que wg-quick guarde cambios en este archivo")
-    config_lines.append("")
     """
+    config_lines.append("")
     # --- [Peer] sections for enabled clients ---
     if not clients_data:
         console.print("[yellow]Advertencia: No hay datos de clientes en el archivo de configuración.[/yellow]")
