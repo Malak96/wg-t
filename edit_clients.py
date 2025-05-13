@@ -76,6 +76,7 @@ def edit_client_interactive(client_uuid_to_edit):
         "3": {"key": "address", "prompt": "Nueva Dirección IP (ej: 10.10.10.X/32)"},
         "4": {"key": "persistentKeepalive", "prompt": "Nuevo Persistent Keepalive (ej: 25 o 0 para desactivar)"},
         "5": {"key": "enabled", "prompt": "Habilitado (s/n)"}
+        # La opción de eliminar se manejará por separado en el menú de acciones.
     }
 
     made_changes = False # Flag para indicar si el usuario intentó hacer algún cambio en un campo
@@ -103,11 +104,12 @@ def edit_client_interactive(client_uuid_to_edit):
         
         current_values_table.add_row("---", "------------------", "------------------")
         current_values_table.add_row("[S]", "Guardar Cambios y Volver", "")
+        current_values_table.add_row("[D]", "Eliminar este Cliente", "")
         current_values_table.add_row("[C]", "Cancelar Cambios y Volver", "")
         console.print(current_values_table)
 
-        choice = Prompt.ask("Selecciona un campo para editar, [S] para Guardar, o [C] para Cancelar", 
-                            choices=[str(k) for k in editable_fields.keys()] + ["S", "s", "C", "c"], 
+        choice = Prompt.ask("Selecciona un campo para editar, [S] Guardar, [D] Eliminar, o [C] Cancelar", 
+                            choices=[str(k) for k in editable_fields.keys()] + ["S", "s", "D", "d", "C", "c"],
                             default="C").upper()
 
         if choice == "C":
@@ -143,6 +145,22 @@ def edit_client_interactive(client_uuid_to_edit):
             else:
                 console.print("[red]Error al guardar los cambios. Los cambios no se han aplicado.[/red]")
                 return False # Error al guardar
+
+        elif choice == "D":
+            client_name_display = editable_client.get('name', client_uuid_to_edit)
+            if Confirm.ask(f"[bold red]¿Estás ABSOLUTAMENTE SEGURO de que quieres eliminar al cliente '{client_name_display}' ({client_uuid_to_edit})?[/bold red]\nEsta acción no se puede deshacer.", default=False):
+                del config_data["clients"][client_uuid_to_edit]
+                if save_config_data(config_data):
+                    console.print(f"[green]Cliente '{client_name_display}' eliminado exitosamente.[/green]")
+                    return True # Indicar que se hizo un cambio (eliminación) y se guardó
+                else:
+                    console.print("[red]Error al guardar los cambios después de intentar eliminar el cliente. El cliente podría no haber sido eliminado del archivo.[/red]")
+                    # Recargar los datos para asegurar la consistencia del estado en memoria si el guardado falló
+                    config_data = load_config_data() 
+                    return False # Error al guardar
+            else:
+                console.print("[yellow]Eliminación cancelada.[/yellow]")
+                continue # Volver al menú de edición
 
         elif choice in editable_fields:
             field_key = editable_fields[choice]["key"]
