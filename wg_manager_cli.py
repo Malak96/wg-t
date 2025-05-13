@@ -1,7 +1,8 @@
 import os
 import sys
 import json 
-import subprocess # Necesario para llamar a gw_conf.py
+import subprocess # Necesario para llamar a wg_conf.py
+import qrcode
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
@@ -21,6 +22,7 @@ try:
     from list_clients import load_data as list_load_data # load_data de list_clients devuelve lista de clientes
     from add_client import add_new_client as add_client_add_new_client
     from add_client import WG_CONFIG_FILE
+    from add_client import load_data
     from edit_clients import edit_client_interactive # Nueva importación
 except ImportError as e:
     if 'Console' in globals():
@@ -69,16 +71,13 @@ def display_clients():
             summary_table = Table(title="[bold]Clientes Registrados[/bold]", show_header=True, header_style="bold magenta")
             summary_table.add_column("#", style="dim", width=4, justify="right")
             summary_table.add_column("Nombre", style="green", min_width=20)
-            summary_table.add_column("UUID (ID)", style="cyan", min_width=36) # El UUID que es la clave en el JSON
             summary_table.add_column("Dirección IP", style="yellow", min_width=15)
 
             for i, cliente_data in enumerate(clientes):
                 num = str(i + 1)
                 name = cliente_data.get('name', '[italic dim]Sin Nombre[/italic dim]')
-                # list_clients.load_data() añade la clave del JSON como 'uuid' en cada diccionario de cliente.
-                uuid_display = cliente_data.get('uuid', '[italic dim]N/A[/italic dim]')
                 ip_address = get_display_ip(cliente_data.get('address'))
-                summary_table.add_row(num, name, uuid_display, ip_address)
+                summary_table.add_row(num, name, ip_address)
             
             console.print(summary_table)
             console.print(Panel(f"Total de clientes: [bold]{len(clientes)}[/bold]. Archivo: [yellow]{WG_CONFIG_FILE}[/yellow]", expand=False, border_style="yellow"))
@@ -100,8 +99,6 @@ def display_clients():
             
             if 1 <= client_num <= len(clientes):
                 selected_client_data = clientes[client_num - 1]
-                # edit_clients.edit_client_interactive espera el UUID que es la clave en el JSON.
-                # list_clients.load_data() lo proporciona como el campo 'uuid'.
                 client_uuid_for_edit = selected_client_data.get('uuid')
 
                 if not client_uuid_for_edit:
@@ -112,8 +109,6 @@ def display_clients():
                 edited = display_single_client_details_and_edit_option(selected_client_data, client_num, client_uuid_for_edit)
                 if edited:
                     needs_refresh = True # Marcar para recargar la lista de clientes
-                # Al volver, el bucle continuará, y si needs_refresh es True, se recargará la tabla.
-                # Si no, se volverá a pedir un número.
             else:
                 console.print(f"[red]Número de cliente inválido. Debe estar entre 1 y {len(clientes)} o ser 0.[/red]")
         
@@ -123,7 +118,7 @@ def display_clients():
             console.print(f"[bold red]Ocurrió un error inesperado:[/bold red] {e}")
 
 def display_single_client_details_and_edit_option(client_data, client_number, client_uuid):
-    """Muestra detalles y ofrece opción de editar. Retorna True si se editó y guardó."""
+    """Muestra detalles y ofrece opciones para editar, mostrar QR o generar archivo .conf."""
     console.clear()
     client_name = client_data.get('name', f'Cliente #{client_number}')
     console.print(Panel(f"[bold magenta]Detalles Completos del Cliente: {client_name} (ID: {client_uuid})[/bold magenta]",
@@ -146,20 +141,67 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
     console.print(details_table)
     console.rule()
 
-    if Confirm.ask(f"\n¿Deseas editar los datos del cliente '{client_name}'?", default=False):
-        changes_made = edit_client_interactive(client_uuid) # Pasar el UUID
-        if changes_made:
-            console.print("[green]Los datos del cliente han sido actualizados.[/green]")
-            Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
-            return True # Indicar que hubo cambios y se guardaron
-        else:
-            # edit_client_interactive ya imprime mensajes si se cancela o no hay cambios
-            Prompt.ask("[dim]Presiona Enter para volver al listado resumen...[/dim]", default="", show_default=False)
-            return False # No hubo cambios o se canceló la edición
-    else:
-        Prompt.ask("\n[dim]Presiona Enter para volver al listado resumen...[/dim]", default="", show_default=False)
-        #display_clients()
-        return True # No se quiso editar
+    while True:
+        console.print("[bold cyan]Opciones disponibles:[/bold cyan]")
+        console.print("1. [green]Editar cliente[/green]")
+        console.print("2. [yellow]Mostrar QR en consola[/yellow]")
+        console.print("3. [blue]Generar archivo .conf[/blue]")
+        console.print("4. [red]Volver al listado[/red]")
+
+        option = Prompt.ask("Selecciona una opción", choices=["1", "2", "3", "4"], default="4")
+
+        if option == "1":
+            changes_made = edit_client_interactive(client_uuid) # Pasar el UUID
+            if changes_made:
+                console.print("[green]Los datos del cliente han sido actualizados.[/green]")
+                Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
+                return True # Indicar que hubo cambios y se guardaron
+            else:
+                console.print("[yellow]No se realizaron cambios en el cliente.[/yellow]")
+
+        elif option == "2":
+            # Generar configuración para QR
+            server_config = load_data(WG_CONFIG_FILE).get("server", {})
+            qr_config = (
+                f"[Interface]\n"
+                f"PrivateKey = {client_data.get('privateKey')}\n"
+                f"Address = {client_data.get('address')}\n"
+                f"DNS = {server_config.get('dns')}\n\n"
+                f"[Peer]\n"
+                f"PublicKey = {server_config.get('publicKey')}\n"
+                f"Endpoint = {server_config.get('endpoint')}:{server_config.get('port')}\n"
+                f"AllowedIPs = 0.0.0.0/0, ::/0\n"
+            )
+
+            # Mostrar QR en consola
+            qr = qrcode.QRCode()
+            qr.add_data(qr_config)
+            qr.print_ascii()  # Mostrar el QR en la consola
+            console.print("[green]Código QR mostrado en consola.[/green]")
+
+        elif option == "3":
+            # Generar archivo de configuración
+            server_config = load_data(WG_CONFIG_FILE).get("server", {})
+            qr_config = (
+                f"[Interface]\n"
+                f"PrivateKey = {client_data.get('PrivateKey')}\n"
+                f"Address = {client_data.get('address')}\n"
+                f"DNS = {server_config.get('dns')}\n\n"
+                f"[Peer]\n"
+                f"PublicKey = {server_config.get('publicKey')}\n"
+                f"Endpoint = {server_config.get('endpoint')}:{server_config.get('port')}\n"
+                f"AllowedIPs = 0.0.0.0/0, ::/0\n"
+            )
+
+            config_file_path = f"{client_name}.conf"
+            with open(config_file_path, "w") as config_file:
+                config_file.write(qr_config)
+            console.print(f"[green]Archivo de configuración generado y guardado en: {config_file_path}[/green]")
+
+        elif option == "4":
+            return False # Volver al listado
+
+        console.rule()
 
 def prompt_add_new_client():
     console.clear()
@@ -173,6 +215,61 @@ def prompt_add_new_client():
     else: 
         console.print("[red]Nombre de cliente inválido. No se añadió ningún cliente.[/red]")
     console.rule(style="dim green")
+
+def generate_keys():
+    """Genera una clave privada y su correspondiente clave pública."""
+    try:
+        private_key = subprocess.check_output(['wg', 'genkey']).decode('utf-8').strip()
+        public_key = subprocess.check_output(['wg', 'pubkey'], input=private_key.encode('utf-8')).decode('utf-8').strip()
+        return private_key, public_key
+    except FileNotFoundError:
+        console.print("[bold yellow]Advertencia:[/bold yellow] Comando 'wg' no encontrado. Usando placeholders para las claves.")
+        console.print("Por favor, asegúrate de que las herramientas de WireGuard estén instaladas y en el PATH para generar claves reales.")
+        return "PLACEHOLDER_PRIVATE_KEY_wg_not_found", "PLACEHOLDER_PUBLIC_KEY_wg_not_found"
+    except subprocess.CalledProcessError as e:
+        console.print(f"[bold red]Error ejecutando el comando 'wg':[/bold red] {e}")
+        console.print("[yellow]Usando placeholders para las claves.[/yellow]")
+        return "PLACEHOLDER_PRIVATE_KEY_wg_error", "PLACEHOLDER_PUBLIC_KEY_wg_error"
+
+def create_wg0_json():
+    """Crea el archivo wg0.json con los datos proporcionados por el usuario."""
+    console.print("[bold green]Creando archivo wg0.json...[/bold green]")
+
+    # Solicitar datos al usuario
+    address = Prompt.ask("Introduce la dirección IP base (por ejemplo, 10.10.10.)", default="10.10.10.")
+    dns = Prompt.ask("Introduce el servidor DNS", default="1.1.1.1")
+    port = Prompt.ask("Introduce el puerto", default="51820")
+    pre_shared_key = Confirm.ask("¿Deseas habilitar preSharedKey?", default=True)
+    endpoint = Prompt.ask("Introduce el endpoint", default="quijije.cl")
+    persistent_keepalive = Prompt.ask("Introduce el valor de persistentKeepalive (0 para deshabilitar)", default="0")
+
+    # Generar claves
+    private_key, public_key = generate_keys()
+
+    # Crear el contenido del archivo wg0.json
+    wg0_data = {
+        "server": {
+            "privateKey": private_key,
+            "publicKey": public_key,
+            "address": address,
+            "dns": dns,
+            "port": int(port),
+            "preSharedKey": str(pre_shared_key),
+            "endpoint": endpoint,
+            "persistentKeepalive": int(persistent_keepalive)
+        },
+        "clients": {}
+    }
+
+    # Guardar en wg0.json
+    with open("wg0.json", "w") as wg0_file:
+        json.dump(wg0_data, wg0_file, indent=4)
+
+    console.print("[green]Archivo wg0.json creado exitosamente.[/green]")
+
+# Verificar si el archivo wg0.json existe
+if not os.path.exists("wg0.json"):
+    create_wg0_json()
 
 def main_menu():
     console.clear()
@@ -196,8 +293,8 @@ def main_menu():
         elif choice == '2':
             prompt_add_new_client()
         elif choice == '3':
-            # Llamar al nuevo script gw_conf.py
-            script_path = os.path.join(current_dir, "gw_conf.py")
+            # Llamar al nuevo script wg_conf.py
+            script_path = os.path.join(current_dir, "wg_conf.py")
             if not os.path.exists(script_path):
                 console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
             else:
@@ -208,9 +305,9 @@ def main_menu():
                 except FileNotFoundError: # Debería ser capturado por el os.path.exists, pero por si acaso
                     console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
                 except subprocess.CalledProcessError as e:
-                    console.print(f"[bold red]Error:[/bold red] El script 'gw_conf.py' terminó con un error (código {e.returncode}).")
+                    console.print(f"[bold red]Error:[/bold red] El script 'wg_conf.py' terminó con un error (código {e.returncode}).")
                 except Exception as e:
-                    console.print(f"[bold red]Error inesperado al ejecutar 'gw_conf.py':[/bold red] {e}")
+                    console.print(f"[bold red]Error inesperado al ejecutar 'wg_conf.py':[/bold red] {e}")
         elif choice == '4':
             console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
             break
