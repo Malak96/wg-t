@@ -58,17 +58,18 @@ def get_display_ip(address_field):
 def display_clients():
     """Muestra una tabla resumen de clientes y permite ver/editar detalles."""
     needs_refresh = True
-    clientes = [] # Inicializar lista de clientes
+    clientes = []  # Inicializar lista de clientes
 
-    while True: # Bucle para permitir refrescar la lista después de editar
+    while True:  # Bucle para permitir refrescar la lista después de editar
         if needs_refresh:
             console.clear()
             console.print(Panel("[bold cyan]Listado de Clientes (Resumen)[/bold cyan]", expand=False, border_style="cyan"))
-            clientes = list_load_data() # Cargar/Recargar clientes
+            clientes = list_load_data()  # Cargar/Recargar clientes
             if not clientes:
                 console.print("[yellow]No se encontraron datos de clientes para mostrar o se produjo un error durante la carga.[/yellow]")
                 console.print(f"Archivo de configuración verificado: [yellow]{WG_CONFIG_FILE}[/yellow]")
-                return # Salir de display_clients si no hay clientes
+                Prompt.ask("[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False)
+                return  # Salir de display_clients si no hay clientes
 
             summary_table = Table(title="[bold]Clientes Registrados[/bold]", show_header=True, header_style="bold magenta")
             summary_table.add_column("#", style="dim", width=4, justify="right")
@@ -88,7 +89,7 @@ def display_clients():
 
         try:
             client_num_str = Prompt.ask(
-                f"Introduce el número del cliente para ver/editar detalles (1-{len(clientes)}) o '0' para volver al menú principal"
+                f"Introduce el número del cliente para ver/editar detalles (1-{len(clientes)}) o '0' para volver al menú principal",default="0"
             )
             if not client_num_str.strip():
                 console.print("[yellow]No se ingresó ningún número. Intenta de nuevo.[/yellow]")
@@ -315,11 +316,13 @@ def main_menu():
         console.print("1. [bold cyan]Listar/Editar clientes[/bold cyan]")
         console.print("2. [bold cyan]Añadir un nuevo cliente[/bold cyan]")
         console.print("3. [bold cyan]Generar Configuración WG (Servidor)[/bold cyan]")
-        console.print("4. [bold red]Salir[/bold red]")
+        console.print("4. [bold cyan]Ver configuración del servidor[/bold cyan]")
+        console.print("5. [bold red]Salir[/bold red]")
+        console.print("6. [bold red]Reiniciar configuración[/bold red]")
         console.rule(style="dim blue")
-        
-        choice = Prompt.ask("Selecciona una opción (1-4)", choices=["1", "2", "3", "4"], default="4")
-        
+
+        choice = Prompt.ask("Selecciona una opción (1-6)", choices=["1", "2", "3", "4", "5", "6"], default="5")
+
         if choice == '1':
             display_clients()
         elif choice == '2':
@@ -332,20 +335,70 @@ def main_menu():
             else:
                 try:
                     console.print(f"\n[cyan]Lanzando el generador de configuración del servidor...[/cyan]")
-                    # Usar sys.executable para asegurar que se usa el mismo intérprete de Python
                     subprocess.run([sys.executable, script_path], check=True)
-                except FileNotFoundError: # Debería ser capturado por el os.path.exists, pero por si acaso
+                except FileNotFoundError:
                     console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
                 except subprocess.CalledProcessError as e:
                     console.print(f"[bold red]Error:[/bold red] El script 'wg_conf.py' terminó con un error (código {e.returncode}).")
                 except Exception as e:
                     console.print(f"[bold red]Error inesperado al ejecutar 'wg_conf.py':[/bold red] {e}")
         elif choice == '4':
-            console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
+            # Llamar al script edit_server.py
+            script_path = os.path.join(current_dir, "edit_server.py")
+            if not os.path.exists(script_path):
+                console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
+            else:
+                try:
+                    console.print(f"\n[cyan]Mostrando configuración del servidor...[/cyan]")
+                    subprocess.run([sys.executable, script_path], check=True)
+                except FileNotFoundError:
+                    console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
+                except subprocess.CalledProcessError as e:
+                    console.print(f"[bold red]Error:[/bold red] El script 'edit_server.py' terminó con un error (código {e.returncode}).")
+                except Exception as e:
+                    console.print(f"[bold red]Error inesperado al ejecutar 'edit_server.py':[/bold red] {e}")
+        elif choice == '5':
+          #  console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
             break
-        
-        #Prompt.ask("\n[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False, show_choices=False)
+        elif choice == '6':
+            console.clear()
+            console.print("[bold red]ADVERTENCIA:[/bold red] Esto eliminará todos los datos de configuración del servidor y los clientes.")
+            confirm_reset = Confirm.ask("¿Estás seguro de que deseas continuar?", default=False)
+            if confirm_reset:
+                try:
+                    console.clear()
+                    if os.path.exists(WG_CONFIG_FILE):
+                        os.remove(WG_CONFIG_FILE)
+                        
+                    else:
+                        console.print(f"[yellow]El archivo {WG_CONFIG_FILE} no existe. No hay nada que eliminar.[/yellow]")
+
+                    console.clear()
+                    console.print(Panel("[bold green]¡Archivo de configuración eliminado exitosamente![/bold green]", expand=False, border_style="green"))
+                    console.print(Panel("[bold yellow]¿Qué deseas hacer a continuación?[/bold yellow]", expand=False, border_style="yellow"))
+                    # Preguntar si desea generar una nueva configuración o salir
+                    options_panel = Panel(
+                        "1. [bold cyan]Crear nueva configuración de Servidor[/bold cyan]\n"
+                        "2. [bold red]Salir[/bold red]",
+                        title="[bold blue]Opciones[/bold blue]",
+                        border_style="blue",
+                        expand=False
+                    )
+                    console.print(options_panel)
+                    next_action = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2")
+                    if next_action == "1":
+                        console.clear()
+                        create_wg0_json()
+                    else:
+                      #  console.print(Panel("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]", expand=False, border_style="blue"))
+                        break
+                except Exception as e:
+                    console.print(f"[bold red]Error al reiniciar la configuración:[/bold red] {e}")
+            else:
+                console.print("[yellow]Operación cancelada. No se realizaron cambios.[/yellow]")
+
         console.clear()
+
 if __name__ == "__main__":
     if not os.path.exists(WG_CONFIG_FILE):
         console.print(f"[yellow]Advertencia:[/yellow] El archivo de configuración '[bold]{WG_CONFIG_FILE}[/bold]' no existe.")
