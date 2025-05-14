@@ -5,6 +5,7 @@ import subprocess # Necesario para llamar a wg_conf.py
 import qrcode
 import psutil
 import ipaddress
+import signal
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
@@ -37,6 +38,13 @@ except ImportError as e:
     sys.exit(1)
 
 console = Console()
+
+# Manejar la señal de interrupción (Ctrl+C)
+def handle_exit_signal(signum, frame):
+    console.print("\n[bold yellow]Saliendo del programa...[/bold yellow]")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, handle_exit_signal)
 
 def get_display_ip(address_field):
     if not address_field:
