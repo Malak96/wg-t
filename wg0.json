@@ -24,6 +24,34 @@
       "persistentKeepalive": 0,
       "allowedIPs": "0.0.0.0/0, ::/0",
       "enabled": true
+    },
+    "63e26d6e-dce1-45a5-8afc-a6686742625e": {
+      "id": "63e26d6e-dce1-45a5-8afc-a6686742625e",
+      "name": "p",
+      "address": "10.0.10.1/242/32",
+      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
+      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
+      "PresharedKey": null,
+      "createdAt": "2025-05-14T03:26:03.615Z",
+      "updatedAt": "2025-05-14T03:26:03.615Z",
+      "dns": "1.1.1.1",
+      "persistentKeepalive": 0,
+      "allowedIPs": "0.0.0.0/0, ::/0",
+      "enabled": true
+    },
+    "cceb1320-7f39-4d92-84da-50d63f6f1333": {
+      "id": "cceb1320-7f39-4d92-84da-50d63f6f1333",
+      "name": "sdf",
+      "address": "10.0.10.1/242/32",
+      "privateKey": "PLACEHOLDER_PRIVATE_KEY_wg_not_found",
+      "publicKey": "PLACEHOLDER_PUBLIC_KEY_wg_not_found",
+      "PresharedKey": null,
+      "createdAt": "2025-05-14T03:31:11.867Z",
+      "updatedAt": "2025-05-14T03:31:11.867Z",
+      "dns": "1.1.1.1",
+      "persistentKeepalive": 0,
+      "allowedIPs": "0.0.0.0/0, ::/0",
+      "enabled": true
     }
   }
 }

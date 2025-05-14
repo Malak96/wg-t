@@ -202,7 +202,7 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
             console.print(f"[green]Archivo de configuración generado y guardado en: {config_file_path}[/green]")
 
         elif option == "4":
-            return False # Volver al listado
+            return True # Volver al listado
 
         console.rule()
 
@@ -307,13 +307,13 @@ def main_menu():
     console.clear()
     while True:
         console.print(Panel(
-            Text("Gestor de Clientes WireGuard (CLI)", style="bold white on blue", justify="center"),
+            Text("Gestor de Clientes WireGuard (CLI)", style="bold white on cyan", justify="center"),
             title="[bold blue]Menú Principal[/bold blue]",
             border_style="blue",
             padding=(1, 2)
         ))
-        console.print("1. [bold green]Listar/Editar[/bold green] clientes")
-        console.print("2. [bold yellow]Añadir[/bold yellow] un nuevo cliente")
+        console.print("1. [bold cyan]Listar/Editar clientes[/bold cyan]")
+        console.print("2. [bold cyan]Añadir un nuevo cliente[/bold cyan]")
         console.print("3. [bold cyan]Generar Configuración WG (Servidor)[/bold cyan]")
         console.print("4. [bold red]Salir[/bold red]")
         console.rule(style="dim blue")
@@ -344,7 +344,7 @@ def main_menu():
             console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
             break
         
-        Prompt.ask("\n[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False, show_choices=False)
+        #Prompt.ask("\n[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False, show_choices=False)
         console.clear()
 if __name__ == "__main__":
     if not os.path.exists(WG_CONFIG_FILE):
