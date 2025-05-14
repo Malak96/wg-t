@@ -176,6 +176,10 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
                 f"AllowedIPs = 0.0.0.0/0, ::/0\n"
             )
 
+            preshared_key = client_data.get('PresharedKey')
+            if preshared_key:
+                qr_config += f"PresharedKey = {preshared_key}\n"
+
             # Mostrar QR en consola con un marco blanco
             qr = qrcode.QRCode(border=4)  # Ajustar el tamaño del borde
             qr.add_data(qr_config)
@@ -196,6 +200,10 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
                 f"Endpoint = {server_config.get('endpoint')}:{server_config.get('port')}\n"
                 f"AllowedIPs = 0.0.0.0/0, ::/0\n"
             )
+
+            preshared_key = client_data.get('PresharedKey')
+            if preshared_key:
+                qr_config += f"PresharedKey = {preshared_key}\n"
 
             config_file_path = f"{client_name}.conf"
             with open(config_file_path, "w") as config_file:
