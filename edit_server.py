@@ -59,17 +59,17 @@ def edit_server_config():
             console.print(f"[{opt}] {key.capitalize()}: {current_value}")
 
         console.print("[S] Guardar y salir")
-        console.print("[C] Cancelar cambios y salir")
+        console.print("[C] Cancelar cambios y volver a la vista de datos")
 
-        choice = Prompt.ask("Selecciona una opción", choices=list(editable_fields.keys()) + ["S", "C"], default="C").upper()
+        choice = Prompt.ask("Selecciona una opción", choices=list(editable_fields.keys()) + ["S", "s", "C", "c"], default="C").upper()
 
         if choice == "C":
-            console.print("[yellow]Cambios cancelados. No se realizaron modificaciones.[/yellow]")
-            return
+            # No imprimir mensaje, simplemente volver a la vista de datos
+            return False  # Indica que no se guardó nada, solo cancelar y volver
 
         if choice == "S":
             save_server_config(server_config)
-            return
+            return True  # Indica que se guardó
 
         field_key = editable_fields[choice]["key"]
         prompt_text = editable_fields[choice]["prompt"]
@@ -107,14 +107,20 @@ def view_server_config():
         console.print("1. [green]Editar configuración del servidor[/green]")
         console.print("2. [red]Volver al menú principal[/red]")
 
-        choice = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2")
+        choice = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2").strip().lower()
 
         if choice == "2":
             return
 
         if choice == "1":
-            edit_server_config()
-            return
+            edited = edit_server_config()
+            if edited:
+                # Si se guardó, recargar datos y mostrar mensaje
+                server_config = load_server_config()
+                console.clear()
+                console.print("[green]Configuración del servidor actualizada exitosamente.[/green]")
+                Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
+            # Si se canceló, simplemente se vuelve a mostrar la vista de datos
 
 if __name__ == "__main__":
     view_server_config()

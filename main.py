@@ -74,6 +74,7 @@ def display_clients():
             console.print(Panel("[bold cyan]Listado de Clientes (Resumen)[/bold cyan]", expand=False, border_style="cyan"))
             clientes = list_load_data()  # Cargar/Recargar clientes
             if not clientes:
+                console.clear()
                 console.print("[yellow]No se encontraron datos de clientes para mostrar o se produjo un error durante la carga.[/yellow]")
                 console.print(f"Archivo de configuración verificado: [yellow]{WG_CONFIG_FILE}[/yellow]")
                 Prompt.ask("[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False)
@@ -100,6 +101,7 @@ def display_clients():
                 f"Introduce el número del cliente para ver/editar detalles (1-{len(clientes)}) o '0' para volver al menú principal",default="0"
             )
             if not client_num_str.strip():
+                console.clear()
                 console.print("[yellow]No se ingresó ningún número. Intenta de nuevo.[/yellow]")
                 continue
 
@@ -113,6 +115,7 @@ def display_clients():
                 client_uuid_for_edit = selected_client_data.get('uuid')
 
                 if not client_uuid_for_edit:
+                    console.clear()
                     console.print("[red]Error: No se pudo determinar el UUID del cliente para la edición.[/red]")
                     console.print("[dim]Esto puede indicar un problema con la carga de datos desde 'list_clients.py'.[/dim]")
                     continue
@@ -121,56 +124,63 @@ def display_clients():
                 if edited:
                     needs_refresh = True # Marcar para recargar la lista de clientes
             else:
+                console.clear()
                 console.print(f"[red]Número de cliente inválido. Debe estar entre 1 y {len(clientes)} o ser 0.[/red]")
         
         except ValueError:
+            console.clear()
             console.print("[red]Entrada inválida. Por favor, introduce un número.[/red]")
         except Exception as e:
+            console.clear()
             console.print(f"[bold red]Ocurrió un error inesperado:[/bold red] {e}")
 
 def display_single_client_details_and_edit_option(client_data, client_number, client_uuid):
     """Muestra detalles y ofrece opciones para editar, mostrar QR o generar archivo .conf."""
-    console.clear()
-    client_name = client_data.get('name', f'Cliente #{client_number}')
-    console.print(Panel(f"[bold magenta]Detalles Completos del Cliente: {client_name} (ID: {client_uuid})[/bold magenta]",
-                      expand=False, border_style="magenta"))
-
-    details_table = Table(show_header=True, header_style="bold cyan", border_style="green")
-    details_table.add_column("Campo", style="dim cyan", width=25)
-    details_table.add_column("Valor", style="white")
-
-    for campo, valor in client_data.items():
-        nombre_campo_formateado = str(campo).replace('_', ' ').capitalize()
-        if isinstance(valor, (list, dict)):
-            valor_str = json.dumps(valor, indent=2)
-        elif valor is None:
-            valor_str = "[italic dim]N/A[/italic dim]"
-        else:
-            valor_str = str(valor)
-        details_table.add_row(nombre_campo_formateado, valor_str)
-    
-    console.print(details_table)
-    console.rule()
-
     while True:
+        console.clear()
+        client_name = client_data.get('name', f'Cliente #{client_number}')
+        console.print(Panel(f"[bold magenta]Detalles Completos del Cliente: {client_name} (ID: {client_uuid})[/bold magenta]",
+                          expand=False, border_style="magenta"))
+
+        details_table = Table(show_header=True, header_style="bold cyan", border_style="green")
+        details_table.add_column("Campo", style="dim cyan", width=25)
+        details_table.add_column("Valor", style="white")
+
+        for campo, valor in client_data.items():
+            nombre_campo_formateado = str(campo).replace('_', ' ').capitalize()
+            if isinstance(valor, (list, dict)):
+                valor_str = json.dumps(valor, indent=2)
+            elif valor is None:
+                valor_str = "[italic dim]N/A[/italic dim]"
+            else:
+                valor_str = str(valor)
+            details_table.add_row(nombre_campo_formateado, valor_str)
+        
+        console.print(details_table)
+        console.rule()
+
         console.print("[bold cyan]Opciones disponibles:[/bold cyan]")
         console.print("1. [green]Editar cliente[/green]")
         console.print("2. [yellow]Mostrar QR en consola[/yellow]")
         console.print("3. [blue]Generar archivo .conf[/blue]")
         console.print("4. [red]Volver al listado[/red]")
 
-        option = Prompt.ask("Selecciona una opción", choices=["1", "2", "3", "4"], default="4")
+        option = Prompt.ask("Selecciona una opción", choices=["1", "2", "3", "4"], default="4").strip().lower()
 
         if option == "1":
+            console.clear()
             changes_made = edit_client_interactive(client_uuid) # Pasar el UUID
             if changes_made:
+                console.clear()
                 console.print("[green]Los datos del cliente han sido actualizados.[/green]")
                 Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
                 return True # Indicar que hubo cambios y se guardaron
             else:
+                console.clear()
                 console.print("[yellow]No se realizaron cambios en el cliente.[/yellow]")
-
+                Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
         elif option == "2":
+            console.clear()
             # Generar configuración para QR
             server_config = load_data(WG_CONFIG_FILE).get("server", {})
             qr_config = (
@@ -194,8 +204,9 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
             qr.make(fit=True)
             qr.print_ascii(invert=True)  # Invertir colores para mejor contraste
             console.print("[green]Código QR mostrado en consola con un marco blanco.[/green]")
-
+            Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
         elif option == "3":
+            console.clear()
             # Generar archivo de configuración
             server_config = load_data(WG_CONFIG_FILE).get("server", {})
             qr_config = (
@@ -217,7 +228,7 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
             with open(config_file_path, "w") as config_file:
                 config_file.write(qr_config)
             console.print(f"[green]Archivo de configuración generado y guardado en: {config_file_path}[/green]")
-
+            Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
         elif option == "4":
             return True # Volver al listado
 
@@ -229,11 +240,16 @@ def prompt_add_new_client():
     client_name_input = Prompt.ask("Introduce el nombre para el nuevo cliente (o deja en blanco para cancelar)")
     
     if client_name_input and client_name_input.strip():
+        console.clear()
         add_client_add_new_client(client_name_input) 
     elif not client_name_input.strip():
+        console.clear()
         console.print("[yellow]Operación cancelada. No se añadió ningún cliente.[/yellow]")
+        Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
     else: 
+        console.clear()
         console.print("[red]Nombre de cliente inválido. No se añadió ningún cliente.[/red]")
+        Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
     console.rule(style="dim green")
 
 def generate_keys():
@@ -321,8 +337,8 @@ if not os.path.exists("wg0.json"):
     create_wg0_json()
 
 def main_menu():
-    console.clear()
     while True:
+        console.clear()
         console.print(Panel(
             Text("Gestor de Clientes WireGuard (CLI)", style="bold white on cyan", justify="center"),
             title="[bold blue]Menú Principal[/bold blue]",
@@ -337,44 +353,51 @@ def main_menu():
         console.print("6. [bold red]Reiniciar configuración[/bold red]")
         console.rule(style="dim blue")
 
-        choice = Prompt.ask("Selecciona una opción (1-6)", choices=["1", "2", "3", "4", "5", "6"], default="5")
+        choice = Prompt.ask("Selecciona una opción (1-6)", choices=["1", "2", "3", "4", "5", "6"], default="5").strip().lower()
 
         if choice == '1':
             display_clients()
         elif choice == '2':
             prompt_add_new_client()
         elif choice == '3':
-            # Llamar al nuevo script wg_conf.py
             script_path = os.path.join(current_dir, "wg_conf.py")
             if not os.path.exists(script_path):
+                console.clear()
                 console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
             else:
                 try:
+                    console.clear()
                     console.print(f"\n[cyan]Lanzando el generador de configuración del servidor...[/cyan]")
                     subprocess.run([sys.executable, script_path], check=True)
                 except FileNotFoundError:
+                    console.clear()
                     console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
                 except subprocess.CalledProcessError as e:
+                    console.clear()
                     console.print(f"[bold red]Error:[/bold red] El script 'wg_conf.py' terminó con un error (código {e.returncode}).")
                 except Exception as e:
+                    console.clear()
                     console.print(f"[bold red]Error inesperado al ejecutar 'wg_conf.py':[/bold red] {e}")
         elif choice == '4':
-            # Llamar al script edit_server.py
             script_path = os.path.join(current_dir, "edit_server.py")
             if not os.path.exists(script_path):
+                console.clear()
                 console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
             else:
                 try:
+                    console.clear()
                     console.print(f"\n[cyan]Mostrando configuración del servidor...[/cyan]")
                     subprocess.run([sys.executable, script_path], check=True)
                 except FileNotFoundError:
+                    console.clear()
                     console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
                 except subprocess.CalledProcessError as e:
+                    console.clear()
                     console.print(f"[bold red]Error:[/bold red] El script 'edit_server.py' terminó con un error (código {e.returncode}).")
                 except Exception as e:
+                    console.clear()
                     console.print(f"[bold red]Error inesperado al ejecutar 'edit_server.py':[/bold red] {e}")
         elif choice == '5':
-          #  console.print("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]")
             break
         elif choice == '6':
             console.clear()
@@ -385,14 +408,15 @@ def main_menu():
                     console.clear()
                     if os.path.exists(WG_CONFIG_FILE):
                         os.remove(WG_CONFIG_FILE)
-                        
                     else:
+                        console.clear()
                         console.print(f"[yellow]El archivo {WG_CONFIG_FILE} no existe. No hay nada que eliminar.[/yellow]")
+                        Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
+                        continue
 
                     console.clear()
                     console.print(Panel("[bold green]¡Archivo de configuración eliminado exitosamente![/bold green]", expand=False, border_style="green"))
                     console.print(Panel("[bold yellow]¿Qué deseas hacer a continuación?[/bold yellow]", expand=False, border_style="yellow"))
-                    # Preguntar si desea generar una nueva configuración o salir
                     options_panel = Panel(
                         "1. [bold cyan]Crear nueva configuración de Servidor[/bold cyan]\n"
                         "2. [bold red]Salir[/bold red]",
@@ -401,19 +425,19 @@ def main_menu():
                         expand=False
                     )
                     console.print(options_panel)
-                    next_action = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2")
+                    next_action = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2").strip().lower()
                     if next_action == "1":
                         console.clear()
                         create_wg0_json()
                     else:
-                      #  console.print(Panel("[bold blue]Saliendo del gestor. ¡Hasta luego![/bold blue]", expand=False, border_style="blue"))
                         break
                 except Exception as e:
+                    console.clear()
                     console.print(f"[bold red]Error al reiniciar la configuración:[/bold red] {e}")
             else:
+                console.clear()
                 console.print("[yellow]Operación cancelada. No se realizaron cambios.[/yellow]")
-
-        console.clear()
+                Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
 
 if __name__ == "__main__":
     if not os.path.exists(WG_CONFIG_FILE):
