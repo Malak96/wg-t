@@ -93,9 +93,15 @@ def view_server_config():
         console.clear()
         console.print(Panel("[bold cyan]Configuración Actual del Servidor[/bold cyan]", border_style="cyan"))
 
+        # Mostrar la configuración en una tabla detallada
+        from rich.table import Table
+        table = Table(title="[bold]Detalles del Servidor WireGuard[/bold]", show_header=True, header_style="bold magenta")
+        table.add_column("Campo", style="cyan", no_wrap=True)
+        table.add_column("Valor", style="white")
         for key, value in server_config.items():
-            display_value = value if value is not None else "[italic dim]No establecido[/italic dim]"
-            console.print(f"[bold]{key.capitalize()}:[/bold] {display_value}")
+            display_value = str(value) if value is not None else "[italic dim]No establecido[/italic dim]"
+            table.add_row(key, display_value)
+        console.print(table)
 
         console.print("\n[bold cyan]Opciones:[/bold cyan]")
         console.print("1. [green]Editar configuración del servidor[/green]")
