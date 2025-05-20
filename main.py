@@ -27,6 +27,7 @@ try:
     from add_client import WG_CONFIG_FILE
     from add_client import load_data
     from edit_clients import edit_client_interactive # Nueva importación
+    from edit_server import view_server_config
 except ImportError as e:
     if 'Console' in globals():
         console = Console()
@@ -65,50 +66,42 @@ def get_display_ip(address_field):
 
 def display_clients():
     """Muestra una tabla resumen de clientes y permite ver/editar detalles."""
-    needs_refresh = True
     clientes = []  # Inicializar lista de clientes
-
     while True:  # Bucle para permitir refrescar la lista después de editar
-        if needs_refresh:
+        console.clear()
+        console.print(Panel("[bold cyan]Listado de Clientes (Resumen)[/bold cyan]", expand=False, border_style="cyan"))
+        clientes = list_load_data()  # Cargar/Recargar clientes
+        if not clientes:
             console.clear()
-            console.print(Panel("[bold cyan]Listado de Clientes (Resumen)[/bold cyan]", expand=False, border_style="cyan"))
-            clientes = list_load_data()  # Cargar/Recargar clientes
-            if not clientes:
-                console.clear()
-                console.print("[yellow]No se encontraron datos de clientes para mostrar o se produjo un error durante la carga.[/yellow]")
-                console.print(f"Archivo de configuración verificado: [yellow]{WG_CONFIG_FILE}[/yellow]")
-                Prompt.ask("[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False)
-                return  # Salir de display_clients si no hay clientes
+            console.print("[yellow]No se encontraron datos de clientes para mostrar o se produjo un error durante la carga.[/yellow]")
+            console.print(f"Archivo de configuración verificado: [yellow]{WG_CONFIG_FILE}[/yellow]")
+            Prompt.ask("[dim]Presiona Enter para volver al menú principal...[/dim]", default="", show_default=False)
+            return  # Salir de display_clients si no hay clientes
 
-            summary_table = Table(title="[bold]Clientes Registrados[/bold]", show_header=True, header_style="bold magenta")
-            summary_table.add_column("#", style="dim", width=4, justify="right")
-            summary_table.add_column("Nombre", style="green", min_width=20)
-            summary_table.add_column("Dirección IP", style="yellow", min_width=15)
+        summary_table = Table(title="[bold]Clientes Registrados[/bold]", show_header=True, header_style="bold magenta")
+        summary_table.add_column("#", style="dim", width=4, justify="right")
+        summary_table.add_column("Nombre", style="green", min_width=20)
+        summary_table.add_column("Dirección IP", style="yellow", min_width=15)
 
-            for i, cliente_data in enumerate(clientes):
-                num = str(i + 1)
-                name = cliente_data.get('name', '[italic dim]Sin Nombre[/italic dim]')
-                ip_address = get_display_ip(cliente_data.get('address'))
-                summary_table.add_row(num, name, ip_address)
-            
-            console.print(summary_table)
-            console.print(Panel(f"Total de clientes: [bold]{len(clientes)}[/bold]. Archivo: [yellow]{WG_CONFIG_FILE}[/yellow]", expand=False, border_style="yellow"))
-            console.rule()
-            needs_refresh = False
+        for i, cliente_data in enumerate(clientes):
+            num = str(i + 1)
+            name = cliente_data.get('name', '[italic dim]Sin Nombre[/italic dim]')
+            ip_address = get_display_ip(cliente_data.get('address'))
+            summary_table.add_row(num, name, ip_address)
+        
+        console.print(summary_table)
+        console.print(Panel(f"Total de clientes: [bold]{len(clientes)}[/bold]. Archivo: [yellow]{WG_CONFIG_FILE}[/yellow]", expand=False, border_style="yellow"))
+        console.rule()
+
 
         try:
             client_num_str = Prompt.ask(
-                f"Introduce el número del cliente para ver/editar detalles (1-{len(clientes)}) o '0' para volver al menú principal",default="0"
+                f"Introduce el número del cliente para ver/editar detalles (1-{len(clientes)}) o Enter para volver."
             )
             if not client_num_str.strip():
-                console.clear()
-                console.print("[yellow]No se ingresó ningún número. Intenta de nuevo.[/yellow]")
-                continue
+                return
 
             client_num = int(client_num_str)
-
-            if client_num == 0:
-                break # Volver al menú principal
             
             if 1 <= client_num <= len(clientes):
                 selected_client_data = clientes[client_num - 1]
@@ -116,8 +109,9 @@ def display_clients():
 
                 if not client_uuid_for_edit:
                     console.clear()
+                    needs_refresh = True
                     console.print("[red]Error: No se pudo determinar el UUID del cliente para la edición.[/red]")
-                    console.print("[dim]Esto puede indicar un problema con la carga de datos desde 'list_clients.py'.[/dim]")
+                    Prompt.ask("[dim]No es posible editar este cliente.[/dim]")
                     continue
                 
                 edited = display_single_client_details_and_edit_option(selected_client_data, client_num, client_uuid_for_edit)
@@ -125,14 +119,17 @@ def display_clients():
                     needs_refresh = True # Marcar para recargar la lista de clientes
             else:
                 console.clear()
-                console.print(f"[red]Número de cliente inválido. Debe estar entre 1 y {len(clientes)} o ser 0.[/red]")
-        
+                needs_refresh = True
+                Prompt.ask(f"[yellow]Número de cliente inválido. Debe estar entre 1 y {len(clientes)}.[/yellow]")
+
         except ValueError:
             console.clear()
-            console.print("[red]Entrada inválida. Por favor, introduce un número.[/red]")
+            needs_refresh = True
+            Prompt.ask("[red]Entrada inválida. Por favor, introduce un número.[/red]")
         except Exception as e:
             console.clear()
-            console.print(f"[bold red]Ocurrió un error inesperado:[/bold red] {e}")
+            needs_refresh = True
+            Prompt.ask(f"[bold red]Ocurrió un error inesperado:[/bold red] {e}")
 
 def display_single_client_details_and_edit_option(client_data, client_number, client_uuid):
     """Muestra detalles y ofrece opciones para editar, mostrar QR o generar archivo .conf."""
@@ -143,7 +140,7 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
                           expand=False, border_style="magenta"))
 
         details_table = Table(show_header=True, header_style="bold cyan", border_style="green")
-        details_table.add_column("Campo", style="dim cyan", width=25)
+        details_table.add_column("Detalle", style="dim cyan", width=25)
         details_table.add_column("Valor", style="white")
 
         for campo, valor in client_data.items():
@@ -203,7 +200,7 @@ def display_single_client_details_and_edit_option(client_data, client_number, cl
             qr.add_data(qr_config)
             qr.make(fit=True)
             qr.print_ascii(invert=True)  # Invertir colores para mejor contraste
-            console.print("[green]Código QR mostrado en consola con un marco blanco.[/green]")
+            console.print(f"[green]Mostrando QR de[/green] [yelow]{client_data.get("name")}[/yelow][green].[/green]")
             Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
         elif option == "3":
             console.clear()
@@ -387,7 +384,8 @@ def main_menu():
                 try:
                     console.clear()
                     console.print(f"\n[cyan]Mostrando configuración del servidor...[/cyan]")
-                    subprocess.run([sys.executable, script_path], check=True)
+                    #subprocess.run([sys.executable, script_path], check=True)
+                    view_server_config()
                 except FileNotFoundError:
                     console.clear()
                     console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
