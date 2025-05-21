@@ -24,6 +24,19 @@
           "persistentKeepalive": 0,
           "allowedIPs": "0.0.0.0/0, ::/0",
           "enabled": true
+        },
+        "e78b461d-7738-41e1-b52c-2ff6f77f1e18": {
+          "name": "Clientx",
+          "address": "10.0.10.3/32",
+          "privateKey": "BLKkJRCWXcqaK4dCtLMHTpHijwKswb6AwGS509dgblc=",
+          "publicKey": "89cobb3d2A0CMQO4cK5/ajsjdhjashdkjahsjdhasdhha=",
+          "PresharedKey": "laksjdklajskldjasnduadshjkashkjldajshdlasjb=",
+          "createdAt": "2025-05-15T08:00:00.000Z",
+          "updatedAt": "2025-05-15T08:00:00.000Z",
+          "dns": "1.1.1.1",
+          "persistentKeepalive": 0,
+          "allowedIPs": "0.0.0.0/0, ::/0",
+          "enabled": false
         }
       }
     },
