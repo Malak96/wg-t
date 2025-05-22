@@ -1,98 +1,30 @@
 {
-  "servers": {
-    "wg0": {
-      "name": "wg0",
-      "privateKey": "AI8EWunPTSWvkHuiiaqc26c/vmPeoElZg2jmr8Q0l0w1",
-      "publicKey": "aUVxqZkxKl1KsYILNjskXw558b+0PG3S9CeWQApxk2U1",
-      "address": "10.0.10.1/24",
+  "server": {
+    "privateKey": "6BVqkKlYUGDWU0hT/kfg0X45GmsD4jqVrwT69jSw02k=",
+    "publicKey": "Z1BcW/XT9x4GlQogScenj16tTPbtE/8EqRUFAYE6Yws=",
+    "address": "10.0.10.1/24",
+    "dns": "1.1.1.1",
+    "port": 51820,
+    "PresharedKey": "True",
+    "endpoint": "0.0.0.0",
+    "persistentKeepalive": 0,
+    "interface": "Ethernet"
+  },
+  "clients": {
+    "34f9093b-7862-422f-9e10-14150e9c6b1a": {
+      "id": "34f9093b-7862-422f-9e10-14150e9c6b1a",
+      "name": "qq",
+      "address": "10.0.10.2/32",
+      "privateKey": "QDSER6mmGzK2PkvcFLQOrMKG06K8r/nNEekISz7MOGQ=",
+      "publicKey": "qXD/nTOb0HobutvBZJ+VpL55jp7yb0jPAPfgjQfpFwQ=",
+      "PresharedKey": "s4hRJLhjEfL6Ak8Y3S5jV5WQK+Ks5xEivfasf/M6K/c=",
+      "createdAt": "2025-05-21T13:48:45.349Z",
+      "updatedAt": "2025-05-21T13:48:45.349Z",
       "dns": "1.1.1.1",
-      "port": 51820,
-      "PresharedKey": "True",
-      "endpoint": "0.0.0.0",
       "persistentKeepalive": 0,
-      "interface": "Ethernet",
-      "clients": {
-        "d67b461d-7738-41e1-b52c-2ff6f77f1e17": {
-          "name": "ClienteA",
-          "address": "10.0.10.2/32",
-          "privateKey": "ALKkJRCWXcqaK4dCtLMHTpHijwKswb6AwGS509dgblc=",
-          "publicKey": "79cobb3d2A0CMQO4cK5/FcAI3Dc2H275pdlCzQ0hSWc=",
-          "PresharedKey": "usOO2DLeTNNSBvufTbIAGpHKrs01VPUI0csQZNFuUOU=",
-          "createdAt": "2025-05-14T06:16:31.025Z",
-          "updatedAt": "2025-05-14T06:16:31.025Z",
-          "dns": "1.1.1.1",
-          "persistentKeepalive": 0,
-          "allowedIPs": "0.0.0.0/0, ::/0",
-          "enabled": true
-        },
-        "e78b461d-7738-41e1-b52c-2ff6f77f1e18": {
-          "name": "Clientx",
-          "address": "10.0.10.3/32",
-          "privateKey": "BLKkJRCWXcqaK4dCtLMHTpHijwKswb6AwGS509dgblc=",
-          "publicKey": "89cobb3d2A0CMQO4cK5/ajsjdhjashdkjahsjdhasdhha=",
-          "PresharedKey": "laksjdklajskldjasnduadshjkashkjldajshdlasjb=",
-          "createdAt": "2025-05-15T08:00:00.000Z",
-          "updatedAt": "2025-05-15T08:00:00.000Z",
-          "dns": "1.1.1.1",
-          "persistentKeepalive": 0,
-          "allowedIPs": "0.0.0.0/0, ::/0",
-          "enabled": false
-        }
-      }
+      "allowedIPs": "0.0.0.0/0, ::/0",
+      "enabled": true
     },
-    "wg1": {
-      "name": "wg1",
-      "privateKey": "B2EWunPTSWvkHuiiaqc26c/vmPeoElZg2jmr8Q0l0w2",
-      "publicKey": "bUVxqZkxKl1KsYILNjskXw558b+0PG3S9CeWQApxk2U2",
-      "address": "10.0.20.1/24",
-      "dns": "8.8.8.8",
-      "port": 51821,
-      "PresharedKey": "True",
-      "endpoint": "1.1.1.1",
-      "persistentKeepalive": 0,
-      "interface": "Ethernet",
-      "clients": {
-        "a1234567-89ab-cdef-0123-456789abcdef": {
-          "name": "ClienteB",
-          "address": "10.0.20.2/32",
-          "privateKey": "BLKkJRCWXcqaK4dCtLMHTpHijwKswb6AwGS509dgblc=",
-          "publicKey": "89cobb3d2A0CMQO4cK5/FcAI3Dc2H275pdlCzQ0hSWc=",
-          "PresharedKey": "vsOO2DLeTNNSBvufTbIAGpHKrs01VPUI0csQZNFuUOU=",
-          "createdAt": "2025-05-16T10:00:00.000Z",
-          "updatedAt": "2025-05-16T10:00:00.000Z",
-          "dns": "8.8.8.8",
-          "persistentKeepalive": 0,
-          "allowedIPs": "0.0.0.0/0, ::/0",
-          "enabled": true
-        }
-      }
-    },
-    "wg2": {
-      "name": "wg2",
-      "privateKey": "C3EWunPTSWvkHuiiaqc26c/vmPeoElZg2jmr8Q0l0w3",
-      "publicKey": "cUVxqZkxKl1KsYILNjskXw558b+0PG3S9CeWQApxk2U3",
-      "address": "10.0.30.1/24",
-      "dns": "9.9.9.9",
-      "port": 51822,
-      "PresharedKey": "True",
-      "endpoint": "2.2.2.2",
-      "persistentKeepalive": 0,
-      "interface": "Ethernet",
-      "clients": {
-        "b2345678-90ab-cdef-1234-567890abcdef": {
-          "id": "b2345678-90ab-cdef-1234-567890abcdef",
-          "name": "ClienteC",
-          "address": "10.0.30.2/32",
-          "privateKey": "CLKkJRCWXcqaK4dCtLMHTpHijwKswb6AwGS509dgblc=",
-          "publicKey": "99cobb3d2A0CMQO4cK5/FcAI3Dc2H275pdlCzQ0hSWc=",
-          "PresharedKey": "wsOO2DLeTNNSBvufTbIAGpHKrs01VPUI0csQZNFuUOU=",
-          "createdAt": "2025-05-17T12:00:00.000Z",
-          "updatedAt": "2025-05-17T12:00:00.000Z",
-          "dns": "9.9.9.9",
-          "persistentKeepalive": 0,
-          "allowedIPs": "0.0.0.0/0, ::/0",
-          "enabled": true
-        },
     "2364bf87-51a9-4444-ac0c-f047b0c2eaee": {
       "id": "2364bf87-51a9-4444-ac0c-f047b0c2eaee",
       "name": "bb",
@@ -274,8 +206,6 @@
       "persistentKeepalive": 0,
       "allowedIPs": "0.0.0.0/0, ::/0",
       "enabled": true
-    }
-      }
     }
   }
 }

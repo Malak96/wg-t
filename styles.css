@@ -91,8 +91,8 @@ Screen {
     }
     .main-container {
         align: center middle;
-        width: 90vw;
-        height: 90vh;
+        width: 110;
+        height: 30;
         max-width: 110;
         min-width: 60;
         max-height: 40;
