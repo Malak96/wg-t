@@ -128,3 +128,16 @@ MainAppUI {
     background: #2ac04a;
     border-bottom: double rgb(0, 48, 0);
 }
+
+Edit_client {
+    align: center middle;
+}
+
+#Edit_client {
+    grid-size: 1;
+    grid-rows: 1fr 3;
+    width: 90;
+    height: 30;
+    border: thick $background 80%;
+    background: $surface;
+}

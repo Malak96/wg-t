@@ -3,10 +3,10 @@ from textual import containers, on
 from textual.app import App, ComposeResult
 from textual.screen import ModalScreen
 # Importar los contenedores para organizar el layout
-from textual.containers import Container, Vertical, Horizontal
+from textual.containers import Container, Vertical, Horizontal, Grid
 
 # Importar los widgets básicos para la UI
-from textual.widgets import Button, ListView, ListItem, Label, Input, Static, DataTable, Select, Link
+from textual.widgets import Button, ListView, ListItem, Label, Input, Static, DataTable, Select
 
 import json
 from textual.widget import Widget
@@ -109,7 +109,7 @@ class TerminalUI(App):
         await self.refresh_instances_list()
         clients_table = self.query_one("#clients_table", DataTable)
         clients_table.cursor_type = "row"
-        clients_table.zebra_stripes = True
+        clients_table.zebra_stripes = False
 
     def load_wg_data_from_json(self, file_path_arg: str):
         """Carga wg_data desde un archivo JSON."""
@@ -199,37 +199,69 @@ class Add_client(ModalScreen):
 
 class Edit_client(ModalScreen):
     """A widget to edit a client."""
-    def __init__(self, id_server: str, id_client: str,wg_ref, previous_screen: None) -> None:
+    def __init__(self, id_server: str, id_client: str, app_ref, previous_screen: None) -> None:
         self.previous_screen = previous_screen
         self.id_server = id_server
         self.id_client = id_client
-        self.wg_data = wg_ref
+        self.app_ref = app_ref
         super().__init__()
 
     def compose(self) -> ComposeResult:  
         yield Vertical(
             Horizontal(
-                Label(self.id_client),
+                Label("Nombre del Cliente:"),
                 Input(id="name_client")
             ),
             Horizontal(
                 Label("Dirección del Cliente:"),
                 Input(id="input_client_address")
+            ),
+            Horizontal(
+                Label("Clave Privada:"),
+                Input(id="input_private_key")
+            ),
+            Horizontal(
+                Label("Clave Pública:"),
+                Input(id="input_public_key")
+            ),
+            Horizontal(
+                Label("Clave Precompartida:"),
+                Input(id="input_preshared_key")
+            ),
+            Horizontal(
+                Label("DNS:"),
+                Input(id="input_dns")
+            ),
+            Horizontal(
+                Label("Keepalive Persistente:"),
+                Input(id="input_persistent_keepalive")
+            ),
+            Horizontal(
+                Label("Allowed IPs:"),
+                Input(id="input_allowed_ips")
+            ),
+            Horizontal(
+                Label("Habilitado:"),
+                Select([("Sí", True), ("No", False)], id="select_enabled")
             )
         )
+
     async def _on_mount(self) -> None:
         """Método para manejar el evento de montaje."""
-        # Aquí puedes agregar lógica adicional si es necesario
         await self.load_client_data()  # Cargar datos del cliente al montar
-        
 
     async def load_client_data(self):
         """Carga los datos del cliente."""
-
-        valor = self.app_ref.wg_data.get("servers", {}).get(self.id_server, {}).get("clients", {}).get(self.id_client)
-        self.query_one("#name_client", Input).update(valor.get("name", "N/D"))
-        self.query_one("#input_client_address", Input).update(valor.get("address", "N/D"))
-        pass
+        valor = self.app_ref.wg_data.get("servers", {}).get(self.id_server, {}).get("clients", {}).get(self.id_client, {})
+        self.query_one("#name_client", Input).value = valor.get("name", "") or ""
+        self.query_one("#input_client_address", Input).value = valor.get("address", "") or ""
+        self.query_one("#input_private_key", Input).value = valor.get("privateKey", "") or ""
+        self.query_one("#input_public_key", Input).value = valor.get("publicKey", "") or ""
+        self.query_one("#input_preshared_key", Input).value = valor.get("PresharedKey", "") or ""
+        self.query_one("#input_dns", Input).value = valor.get("dns", "") or ""
+        self.query_one("#input_persistent_keepalive", Input).value = str(valor.get("persistentKeepalive", "")) or ""
+        self.query_one("#input_allowed_ips", Input).value = valor.get("allowedIPs", "") or ""
+        self.query_one("#select_enabled", Select).value = valor.get("enabled", False)
 
 class Delete_client(ModalScreen):
     """A widget to delete a client."""
