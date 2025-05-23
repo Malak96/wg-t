@@ -31,7 +31,7 @@ class TerminalUI(App):
         selct_instance.clear()
         list_cl = []
         # Asegúrate de iterar sobre los servidores, no sobre el diccionario raíz
-        for name, instance in self.wg_data["servres"].items():
+        for name, instance in self.wg_data["servers"].items():
             # Añadir opciones al Select
             list_cl.append((name, instance["name"]))
         # Añadir opciones al Select 
@@ -50,7 +50,7 @@ class TerminalUI(App):
         """Carga wg_data desde un archivo JSON."""
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Si tu JSON tiene la clave "servres", usa esa parte
+            # Si tu JSON tiene la clave "servers", usa esa parte
             self.wg_data = data.get("servrs", data)
 
 
@@ -62,7 +62,7 @@ class TerminalUI(App):
         if  selected_client is Select.BLANK:
             return
         id_name = selected_client
-        instance = self.wg_data["servres"][id_name]
+        instance = self.wg_data["servers"][id_name]
 
         self.query_one("#input_pubkey", Label).update(instance.get("publicKey", ""))
         self.query_one("#input_privkey", Label).update(instance.get("privateKey", ""))

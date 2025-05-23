@@ -54,10 +54,14 @@ class MainAppUI(Static):
                         classes="details-container"
                     ),
                     DataTable(id="clients_table", classes="clients-table"),
-                    Horizontal(
-                        Link("Añadir Cliente", id="add_client", classes="action-link"), # Texto más descriptivo
-                        classes="client-actions-bar" # Clase CSS opcional
-                    ),
+                    
+                    #Horizontal(
+                   #     Label("Añadir Cliente", id="add_client"), # Texto más descriptivo
+                   #     Label("Añadir Servidor", id="add_server", classes="action-link"), # Texto más descriptivo
+                   #     classes="client-actions-bar" # Clase CSS opcional
+                   # ),
+                   
+                    #'default', 'error', 'primary', 'success', or 'warning'
                     Horizontal(
                         Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), # Texto más descriptivo
                         Button("Eliminar Cliente", id="btn_delete_client", classes="list-btn", variant="error"), # Texto más descriptivo
@@ -84,17 +88,19 @@ class TerminalUI(App):
     async def refresh_instances_list(self):
         """Actualiza el ListView de instancias según wg_data."""
         selct_instance = self.query_one("#select_instance", Select)
-        selct_instance.clear() # Usar clear_options() para Select
+        selct_instance.clear()
         list_cl = []
-        # Asumiendo que "servers" es la clave correcta en tu JSON y self.wg_data está inicializado
-        for name, instance in self.wg_data.get("servers", {}).items():
-            # (Texto a mostrar en el Select, valor interno del item)
-            list_cl.append((instance.get("name", name), name))
+        # Asegúrate de iterar sobre los servidores, no sobre el diccionario raíz
+        for name, instance in self.wg_data["servers"].items():
+            # Añadir opciones al Select
+            list_cl.append((name, instance["name"]))
+        # Añadir opciones al Select 
+        selct_instance.set_options(list_cl)
 
-        if list_cl:
-            selct_instance.set_options(list_cl)
-        else:
-            selct_instance.prompt = "No hay servidores disponibles" # Mensaje si no hay opciones
+        #if list_cl:
+        #    selct_instance.set_options(list_cl)
+        #else:
+        #    selct_instance.prompt = "No hay servidores disponibles" # Mensaje si no hay opciones
 
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
@@ -110,13 +116,12 @@ class TerminalUI(App):
         try:
             with open(file_path_arg, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            # Asegúrate que la clave "servers" (o "servrs" si es un typo intencional en tu JSON) es la correcta.
-            self.wg_data = data.get("servers", data) # Usando "servers" como la clave esperada
+            self.wg_data = data  # Siempre el objeto raíz
             if "servers" not in data:
-                 self.notify("La clave 'servers' no se encontró en el JSON. Usando datos raíz.", severity="warning", title="Advertencia de Carga")
+                self.notify("La clave 'servers' no se encontró en el JSON. Usando datos raíz.", severity="warning", title="Advertencia de Carga")
         except FileNotFoundError:
             self.notify(f"Archivo no encontrado: {file_path_arg}", severity="error", title="Error de Carga")
-            self.wg_data = {"servers": {}} # Inicializar para evitar errores en refresh_instances_list
+            self.wg_data = {"servers": {}}
         except json.JSONDecodeError:
             self.notify(f"Error decodificando JSON en el archivo: {file_path_arg}", severity="error", title="Error de Carga")
             self.wg_data = {"servers": {}}
@@ -168,6 +173,12 @@ class TerminalUI(App):
                 key=client_id # Añadir clave para posible referencia futura si es necesario
             )
 
+    @on(Button.Pressed, "#btn_edit_client")
+    def edit_client_handler(self, event: Button.Pressed) -> None:
+        """Abre el modal para editar un cliente."""
+        modal = Edit_client("wg0", "107c4cee-2f11-458f-898a-bd86f8df1207",self, previous_screen=self)
+        self.push_screen(modal)
+
     def compose(self) -> ComposeResult:
         """Compone la UI principal de la aplicación."""
         yield MainAppUI(
@@ -181,23 +192,44 @@ class TerminalUI(App):
 # --- Clases Modales ---
 class Add_client(ModalScreen):
     """A widget to add a client."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
+    def __init__(self, id_server: str, previous_screen: None) -> None:
+        self.previous_screen = previous_screen
+        self.id_server = id_server
         super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
 
 class Edit_client(ModalScreen):
     """A widget to edit a client."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
+    def __init__(self, id_server: str, id_client: str,wg_ref, previous_screen: None) -> None:
+        self.previous_screen = previous_screen
+        self.id_server = id_server
+        self.id_client = id_client
+        self.wg_data = wg_ref
         super().__init__()
 
     def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
+        yield Vertical(
+            Horizontal(
+                Label(self.id_client),
+                Input(id="name_client")
+            ),
+            Horizontal(
+                Label("Dirección del Cliente:"),
+                Input(id="input_client_address")
+            )
+        )
+    async def _on_mount(self) -> None:
+        """Método para manejar el evento de montaje."""
+        # Aquí puedes agregar lógica adicional si es necesario
+        await self.load_client_data()  # Cargar datos del cliente al montar
+        
+
+    async def load_client_data(self):
+        """Carga los datos del cliente."""
+
+        valor = self.app_ref.wg_data.get("servers", {}).get(self.id_server, {}).get("clients", {}).get(self.id_client)
+        self.query_one("#name_client", Input).update(valor.get("name", "N/D"))
+        self.query_one("#input_client_address", Input).update(valor.get("address", "N/D"))
+        pass
 
 class Delete_client(ModalScreen):
     """A widget to delete a client."""

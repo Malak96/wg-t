@@ -24,6 +24,7 @@ except ImportError:
 try:
     from list_clients import load_data as list_load_data # load_data de list_clients devuelve lista de clientes
     from add_client import add_new_client as add_client_add_new_client
+    from add_client import generate_wg_keys
     from add_client import WG_CONFIG_FILE
     from add_client import load_data
     from edit_clients import edit_client_interactive # Nueva importación
@@ -64,13 +65,13 @@ def get_display_ip(address_field):
 
 
 
-def display_clients():
+def display_clients(server_id):
     """Muestra una tabla resumen de clientes y permite ver/editar detalles."""
     clientes = []  # Inicializar lista de clientes
     while True:  # Bucle para permitir refrescar la lista después de editar
         console.clear()
         console.print(Panel("[bold cyan]Listado de Clientes (Resumen)[/bold cyan]", expand=False, border_style="cyan"))
-        clientes = list_load_data()  # Cargar/Recargar clientes
+        clientes = list_load_data(server_id)  # Cargar/Recargar clientes
         if not clientes:
             console.clear()
             console.print("[yellow]No se encontraron datos de clientes para mostrar o se produjo un error durante la carga.[/yellow]")
@@ -333,112 +334,115 @@ def create_wg0_json():
 if not os.path.exists("wg0.json"):
     create_wg0_json()
 
+def cargar_configuracion():
+    if not os.path.exists(WG_CONFIG_FILE):
+        return {"servers": {}}
+    with open(WG_CONFIG_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def seleccionar_servidor():
+    config = cargar_configuracion()
+    servers = config.get("servers", {})
+    if not servers:
+        console.print("[yellow]No hay servidores configurados. Debes agregar uno primero.[/yellow]")
+        return None, config
+    server_ids = list(servers.keys())
+    console.print("[bold cyan]Servidores disponibles:[/bold cyan]")
+    for idx, sid in enumerate(server_ids, 1):
+        nombre = servers[sid].get('name', sid)
+        console.print(f"{idx}. [green]{nombre}[/green] (ID: {sid})")
+    idx_str = Prompt.ask(f"Selecciona el número del servidor (1-{len(server_ids)})", default="1")
+    try:
+        idx = int(idx_str)
+        if 1 <= idx <= len(server_ids):
+            return server_ids[idx-1], config
+    except Exception:
+        pass
+    console.print("[red]Selección inválida.[/red]")
+    return None, config
+
+def agregar_servidor():
+    config = cargar_configuracion()
+    servers = config.setdefault("servers", {})
+    server_id_name = Prompt.ask("Introduce un nombre único para el nuevo servidor")
+    if not server_id_name or server_id_name in servers:
+        Prompt.ask("[red]ID inválido o ya existente.[/red]")
+        return
+    private_key, public_key = generate_keys()
+    address = Prompt.ask("Dirección IP/máscara del servidor", default="10.10.10.1/24")
+    dns = Prompt.ask("DNS del servidor", default="1.1.1.1")
+    port = Prompt.ask("Puerto", default="51820")
+    endpoint = Prompt.ask("Endpoint", default="0.0.0.0")
+    persistent_keepalive = Prompt.ask("PersistentKeepalive", default="0")
+    servers[server_id_name] = {
+        "publicKey": public_key,
+        "privateKey": private_key,
+        "name": server_id_name,
+        "address": address,
+        "dns": dns,
+        "port": int(port),
+        "endpoint": endpoint,
+        "persistentKeepalive": int(persistent_keepalive),
+        "clients": {}
+    }
+    with open(WG_CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+    console.print(f"[green]Servidor '{server_id_name}' añadido correctamente.[/green]")
+    Prompt.ask("Presiona Enter para continuar...")
+
+def eliminar_servidor():
+    server_id, config = seleccionar_servidor()
+    if not server_id:
+        return
+    nombre = config['servers'][server_id].get('name', server_id)
+    if Confirm.ask(f"¿Seguro que deseas eliminar el servidor '{nombre}' (ID: {server_id})? Esta acción es irreversible.", default=False):
+        del config['servers'][server_id]
+        with open(WG_CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        console.print(f"[red]Servidor '{nombre}' eliminado.[/red]")
+        Prompt.ask("Presiona Enter para continuar...")
+
 def main_menu():
     while True:
         console.clear()
         console.print(Panel(
-            Text("Gestor de Clientes WireGuard (CLI)", style="bold white on cyan", justify="center"),
+            Text("Gestor de WireGuard Multi-Servidor (CLI)", style="bold white on cyan", justify="center"),
             title="[bold blue]Menú Principal[/bold blue]",
             border_style="blue",
             padding=(1, 2)
         ))
-        console.print("1. [bold cyan]Listar/Editar clientes[/bold cyan]")
-        console.print("2. [bold cyan]Añadir un nuevo cliente[/bold cyan]")
-        console.print("3. [bold cyan]Generar Configuración WG (Servidor)[/bold cyan]")
-        console.print("4. [bold cyan]Ver configuración del servidor[/bold cyan]")
-        console.print("5. [bold red]Salir[/bold red]")
-        console.print("6. [bold red]Reiniciar configuración[/bold red]")
+        console.print("1. [bold cyan]Listar/Editar clientes de un servidor[/bold cyan]")
+        console.print("2. [bold cyan]Añadir un nuevo cliente a un servidor[/bold cyan]")
+        console.print("3. [bold cyan]Agregar un nuevo servidor[/bold cyan]")
+        console.print("4. [bold cyan]Editar configuración de un servidor[/bold cyan]")
+        console.print("5. [bold cyan]Eliminar un servidor[/bold cyan]")
+        console.print("6. [bold red]Salir[/bold red]")
         console.rule(style="dim blue")
-
-        choice = Prompt.ask("Selecciona una opción (1-6)", choices=["1", "2", "3", "4", "5", "6"], default="5").strip().lower()
-
-        if choice == '1':
-            display_clients()
-        elif choice == '2':
-            prompt_add_new_client()
-        elif choice == '3':
-            script_path = os.path.join(current_dir, "wg_conf.py")
-            if not os.path.exists(script_path):
-                console.clear()
-                console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
-            else:
-                try:
-                    console.clear()
-                    console.print(f"\n[cyan]Lanzando el generador de configuración del servidor...[/cyan]")
-                    subprocess.run([sys.executable, script_path], check=True)
-                except FileNotFoundError:
-                    console.clear()
-                    console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
-                except subprocess.CalledProcessError as e:
-                    console.clear()
-                    console.print(f"[bold red]Error:[/bold red] El script 'wg_conf.py' terminó con un error (código {e.returncode}).")
-                except Exception as e:
-                    console.clear()
-                    console.print(f"[bold red]Error inesperado al ejecutar 'wg_conf.py':[/bold red] {e}")
-        elif choice == '4':
-            script_path = os.path.join(current_dir, "edit_server.py")
-            if not os.path.exists(script_path):
-                console.clear()
-                console.print(f"[bold red]Error:[/bold red] El script '{script_path}' no se encuentra.")
-            else:
-                try:
-                    console.clear()
-                    console.print(f"\n[cyan]Mostrando configuración del servidor...[/cyan]")
-                    #subprocess.run([sys.executable, script_path], check=True)
-                    view_server_config()
-                except FileNotFoundError:
-                    console.clear()
-                    console.print(f"[bold red]Error:[/bold red] No se pudo encontrar el intérprete de Python o el script '{script_path}'.")
-                except subprocess.CalledProcessError as e:
-                    console.clear()
-                    console.print(f"[bold red]Error:[/bold red] El script 'edit_server.py' terminó con un error (código {e.returncode}).")
-                except Exception as e:
-                    console.clear()
-                    console.print(f"[bold red]Error inesperado al ejecutar 'edit_server.py':[/bold red] {e}")
-        elif choice == '5':
+        opcion = Prompt.ask("Selecciona una opción", choices=["1","2","3","4","5","6"], default="6")
+        if opcion == "1":
+            server_id, _ = seleccionar_servidor()
+            if server_id:
+                display_clients(server_id)
+        elif opcion == "2":
+            server_id, _ = seleccionar_servidor()
+            if server_id:
+                nombre_cliente = Prompt.ask("Nombre del nuevo cliente")
+                if nombre_cliente:
+                    add_client_add_new_client(nombre_cliente, server_id)
+        elif opcion == "3":
+            agregar_servidor()
+        elif opcion == "4":
+            server_id, _ = seleccionar_servidor()
+            if server_id:
+                # Llama a la función de edición de servidor
+                pass
+        elif opcion == "5":
+            eliminar_servidor()
+        elif opcion == "6":
+            console.print("[yellow]Saliendo...[/yellow]")
             break
-        elif choice == '6':
-            console.clear()
-            console.print("[bold red]ADVERTENCIA:[/bold red] Esto eliminará todos los datos de configuración del servidor y los clientes.")
-            confirm_reset = Confirm.ask("¿Estás seguro de que deseas continuar?", default=False)
-            if confirm_reset:
-                try:
-                    console.clear()
-                    if os.path.exists(WG_CONFIG_FILE):
-                        os.remove(WG_CONFIG_FILE)
-                    else:
-                        console.clear()
-                        console.print(f"[yellow]El archivo {WG_CONFIG_FILE} no existe. No hay nada que eliminar.[/yellow]")
-                        Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
-                        continue
-
-                    console.clear()
-                    console.print(Panel("[bold green]¡Archivo de configuración eliminado exitosamente![/bold green]", expand=False, border_style="green"))
-                    console.print(Panel("[bold yellow]¿Qué deseas hacer a continuación?[/bold yellow]", expand=False, border_style="yellow"))
-                    options_panel = Panel(
-                        "1. [bold cyan]Crear nueva configuración de Servidor[/bold cyan]\n"
-                        "2. [bold red]Salir[/bold red]",
-                        title="[bold blue]Opciones[/bold blue]",
-                        border_style="blue",
-                        expand=False
-                    )
-                    console.print(options_panel)
-                    next_action = Prompt.ask("Selecciona una opción", choices=["1", "2"], default="2").strip().lower()
-                    if next_action == "1":
-                        console.clear()
-                        create_wg0_json()
-                    else:
-                        break
-                except Exception as e:
-                    console.clear()
-                    console.print(f"[bold red]Error al reiniciar la configuración:[/bold red] {e}")
-            else:
-                console.clear()
-                console.print("[yellow]Operación cancelada. No se realizaron cambios.[/yellow]")
-                Prompt.ask("[dim]Presiona Enter para continuar...[/dim]", default="", show_default=False)
 
 if __name__ == "__main__":
     if not os.path.exists(WG_CONFIG_FILE):
-        console.print(f"[yellow]Advertencia:[/yellow] El archivo de configuración '[bold]{WG_CONFIG_FILE}[/bold]' no existe.")
-    
+        agregar_servidor()
     main_menu()
