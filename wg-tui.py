@@ -34,13 +34,13 @@ class MainAppUI(Static):
         with containers.Container(classes="main-container"): # Contenedor interno
             yield self.title_text_widget
             yield self.info_widget
-            
             yield Horizontal(    
                 Vertical(
                     Vertical( # Contenedor para el selector de servidor
                         Label("Selecciona un servidor:"), # Corregido typo
                         Select([], id="select_instance"),
-                        classes="server-selection-box" # Clase CSS opcional para estilizar
+                        Label("Selecciona un cliente"),
+                        Select([], id="select_client"),
                     ),
                     Static(), # Espaciador o contenido adicional
                     Label("Detalles del Servidor:", classes="details-header"), # Título para la sección de detalles
@@ -104,7 +104,7 @@ class TerminalUI(App):
 
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
-        self.theme = "nord" # Establecer el tema de la aplicación
+        self.theme = "dracula" 
         self.load_wg_data_from_json("wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
         await self.refresh_instances_list()
         clients_table = self.query_one("#clients_table", DataTable)
@@ -136,6 +136,16 @@ class TerminalUI(App):
         
         # Si no hay selección o no hay datos de servidores, limpiar los campos.
         if selected_instance_id is Select.BLANK or not self.wg_data.get("servers"):
+            self.query_one("#select_client", Select).clear()
+            slect_client = self.query_one("#select_client", Select)
+            slect_client_var = []
+            slect_client.clear()
+            for name, instance in self.wg_data["servers",{""}].items():
+                slect_client = self.query_one("#select_client", Select)
+                slect_client.append((name, instance["name"]))
+                
+            slect_client.set_options(slect_client_var)
+            
             self.query_one("#input_pubkey", Label).update("N/D")
             self.query_one("#input_privkey", Label).update("N/D")
             self.query_one("#input_address", Label).update("N/D")
@@ -176,7 +186,16 @@ class TerminalUI(App):
     @on(Button.Pressed, "#btn_edit_client")
     def edit_client_handler(self, event: Button.Pressed) -> None:
         """Abre el modal para editar un cliente."""
-        modal = Edit_client("wg0", "107c4cee-2f11-458f-898a-bd86f8df1207",self, previous_screen=self)
+        slect_server = self.query_one("#select_instance", Select)
+        if slect_server.value == Select.BLANK:
+            self.notify("Por favor selecciona un servidor primero.", severity="error", title="Error de Selección")
+            return
+        clients_table = self.query_one("#clients_table", DataTable)
+        selected_client = clients_table.selected_row
+        if not selected_client:
+            self.notify("Por favor selecciona un cliente primero.", severity="error", title="Error de Selección")
+            return
+        modal = Edit_client(self.query_one("#select_instance", Select).value, self.query_one("#clients_table", DataTable) ,self, previous_screen=self)
         self.push_screen(modal)
 
     def compose(self) -> ComposeResult:
@@ -243,7 +262,12 @@ class Edit_client(ModalScreen):
             Horizontal(
                 Label("Habilitado:"),
                 Select([("Sí", True), ("No", False)], id="select_enabled")
+            ),
+            Horizontal(
+                Button("Guardar",id="btn_save_client",variant="primary"),
+                Button("Cancelar",id="btn_cancel_client", variant="error")
             )
+            ,id="Edit_client"
         )
 
     async def _on_mount(self) -> None:
