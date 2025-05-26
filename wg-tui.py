@@ -133,19 +133,13 @@ class TerminalUI(App):
     def select_client_handler(self, event: Select.Changed) -> None:
         """Actualiza el DataTable de clientes al seleccionar un cliente."""
         selected_instance_id = event.value
-        
+        slect_client = self.query_one("#select_client", Select)
         # Si no hay selección o no hay datos de servidores, limpiar los campos.
         if selected_instance_id is Select.BLANK or not self.wg_data.get("servers"):
             self.query_one("#select_client", Select).clear()
-            slect_client = self.query_one("#select_client", Select)
             slect_client_var = []
             slect_client.clear()
-            for name, instance in self.wg_data["servers",{""}].items():
-                slect_client = self.query_one("#select_client", Select)
-                slect_client.append((name, instance["name"]))
-                
             slect_client.set_options(slect_client_var)
-            
             self.query_one("#input_pubkey", Label).update("N/D")
             self.query_one("#input_privkey", Label).update("N/D")
             self.query_one("#input_address", Label).update("N/D")
@@ -157,7 +151,7 @@ class TerminalUI(App):
 
         instance = self.wg_data.get("servers", {}).get(selected_instance_id)
         if not instance:
-            self.notify(f"No se encontró la instancia seleccionada: {selected_instance_id}", severity="error", title="Error de Datos")
+            self.notify(f"No se encontró el servidor seleccionado: {selected_instance_id}", severity="error", title="Error de Datos")
             return
 
         self.query_one("#input_pubkey", Label).update(instance.get("publicKey", "N/D"))
@@ -172,16 +166,16 @@ class TerminalUI(App):
         if not clients_table.columns:
             clients_table.add_columns("Nombre", "Dirección", "Clave Pública", "AllowedIPs", "Habilitado")
         
-        clients_dict = instance.get("clients", {})
-        for client_id, client_data in clients_dict.items():
-            clients_table.add_row(
-                client_data.get("name", "N/D"),
-                client_data.get("address", "N/D"),
-                client_data.get("publicKey", "N/D"),
-                client_data.get("allowedIPs", "N/D"),
-                "Sí" if client_data.get("enabled", False) else "No",
-                key=client_id # Añadir clave para posible referencia futura si es necesario
-            )
+        # clients_dict = instance.get("clients", {})
+        # for client_id, client_data in clients_dict.items():
+        #     clients_table.add_row(
+        #         client_data.get("name", "N/D"),
+        #         client_data.get("address", "N/D"),
+        #         client_data.get("publicKey", "N/D"),
+        #         client_data.get("allowedIPs", "N/D"),
+        #         "Sí" if client_data.get("enabled", False) else "No",
+        #         key=client_id # Añadir clave para posible referencia futura si es necesario
+        #     )
 
     @on(Button.Pressed, "#btn_edit_client")
     def edit_client_handler(self, event: Button.Pressed) -> None:
