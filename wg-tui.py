@@ -95,7 +95,7 @@ class TerminalUI(App):
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
         self.theme = "flexoki" 
-        self.load_data("wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
+        self.load_data("cli/wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
         await self.refresh_instances_list()
 
     def load_data(self, path_json: str):
