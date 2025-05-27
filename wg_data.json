@@ -22,7 +22,7 @@
           "PresharedKey": null,
           "createdAt": "2025-05-22T18:29:14.896Z",
           "updatedAt": "2025-05-22T18:29:14.896Z",
-          "dns": "1.1.1.1",
+          "dns": "2.2.2.2",
           "persistentKeepalive": 0,
           "allowedIPs": "0.0.0.0/0, ::/0",
           "enabled": true
@@ -68,14 +68,28 @@
           "persistentKeepalive": 0,
           "allowedIPs": "0.0.0.0/0, ::/0",
           "enabled": true
+        },
+        "c9c6995b-6226-4ed8-bdf8-9cd6eff7a67c": {
+          "id": "c9c6995b-6226-4ed8-bdf8-9cd6eff7a67c",
+          "name": "aa",
+          "address": "10.10.10.6/32",
+          "privateKey": "qG5QH1mfYYjS4xnwgMIk7iftif0cV2jUtLWwkK1f32g=",
+          "publicKey": "1uIqGowZXZKCanZMecESKhr0RYm1VWtrhBkxy2VYLW0=",
+          "PresharedKey": null,
+          "createdAt": "2025-05-26T21:54:25.670Z",
+          "updatedAt": "2025-05-26T21:54:25.670Z",
+          "dns": "1.1.1.1",
+          "persistentKeepalive": 0,
+          "allowedIPs": "0.0.0.0/0, ::/0",
+          "enabled": true
         }
       }
     },
     "wg1": {
       "name": "wg1",
       "address": "10.10.10.1/24",
-      "dns": "1.1.1.1",
-      "port": 51820,
+      "dns": "2.2.2.2",
+      "port": 89990,
       "endpoint": "0.0.0.0",
       "persistentKeepalive": 0,
       "clients": {
@@ -88,7 +102,7 @@
           "PresharedKey": null,
           "createdAt": "2025-05-22T18:44:23.670Z",
           "updatedAt": "2025-05-22T18:44:23.670Z",
-          "dns": "1.1.1.1",
+          "dns": "2.2.2.2",
           "persistentKeepalive": 0,
           "allowedIPs": "0.0.0.0/0, ::/0",
           "enabled": true
@@ -114,11 +128,67 @@
       "privateKey": "CH/A9/fsRo70Ii3VSZedzq0zM9pdprNy/pzNeRPXvGU=",
       "name": "wg2",
       "address": "10.10.10.1/24",
-      "dns": "1.1.1.1",
-      "port": 51820,
+      "dns": "2.2.2.3",
+      "port": 55990,
       "endpoint": "0.0.0.0",
       "persistentKeepalive": 0,
-      "clients": {}
+      "clients": {
+        "2e873bc9-db38-49d9-8bc7-ae50461826cb": {
+          "id": "2e873bc9-db38-49d9-8bc7-ae50461826cb",
+          "name": "angel",
+          "address": "10.10.10.2/32",
+          "privateKey": "gMvGMc+pQHHOjiomKBr/ijOwedvd7I1dYbALOlFSI34=",
+          "publicKey": "UgVjDz2TTEh7S+mcfb9kOg4fiA9sR4KL21TylDEDvT4=",
+          "PresharedKey": null,
+          "createdAt": "2025-05-27T05:28:32.384Z",
+          "updatedAt": "2025-05-27T05:28:32.384Z",
+          "dns": "2.2.2.3",
+          "persistentKeepalive": 0,
+          "allowedIPs": "0.0.0.0/0, ::/0",
+          "enabled": true
+        },
+        "f6bb7d09-f40b-49c9-990a-168b07be095c": {
+          "id": "f6bb7d09-f40b-49c9-990a-168b07be095c",
+          "name": "koda",
+          "address": "10.10.10.3/32",
+          "privateKey": "YKOjd+VwF4+WOFoxr/L23NQUe1EGaL+GRTSXC2kDb3g=",
+          "publicKey": "xrX0HbP0C/4uw6oK36LdEpMkXU8+EcXv4YoFHoSZcFw=",
+          "PresharedKey": null,
+          "createdAt": "2025-05-27T05:30:47.470Z",
+          "updatedAt": "2025-05-27T05:30:47.470Z",
+          "dns": "2.2.2.3",
+          "persistentKeepalive": 0,
+          "allowedIPs": "0.0.0.0/0, ::/0",
+          "enabled": true
+        }
+      }
+    },
+    "l": {
+      "publicKey": "TnBYWLoLL/rJ/yCqN0WdCAF8mY05p1VFUEXCyeXE2hg=",
+      "privateKey": "YKff/jer1SYwdBSVNWiTslnG41TD85hZWCNRVSPOrU0=",
+      "name": "l",
+      "address": "16.12.9.1/24",
+      "dns": "8.8.8.8",
+      "port": 77777,
+      "endpoint": "0.0.0.0",
+      "persistentKeepalive": 0,
+      "PresharedKey": true,
+      "clients": {
+        "bdf3a917-e8bf-4df3-81d4-4a19da8efc24": {
+          "id": "bdf3a917-e8bf-4df3-81d4-4a19da8efc24",
+          "name": "bloquw",
+          "address": "16.12.9.2/32",
+          "privateKey": "SJ0iIdCrHTW81gHdvQeCMpCtVr9LkqT+DNlQACmtaGo=",
+          "publicKey": "IXxj7ZM4vcef9rLGHu9JtxMYcYDB9QYz0Rdx6p/oJhg=",
+          "PresharedKey": "+Ga/9Ih9L5vIRSFKXLpnpEprGAZsRhIPPeUaLYBwuLg=",
+          "createdAt": "2025-05-27T05:32:04.565Z",
+          "updatedAt": "2025-05-27T05:32:04.565Z",
+          "dns": "8.8.8.8",
+          "persistentKeepalive": 0,
+          "allowedIPs": "0.0.0.0/0, ::/0",
+          "enabled": true
+        }
+      }
     }
   }
 }

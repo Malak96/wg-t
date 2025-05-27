@@ -38,9 +38,12 @@ class MainAppUI(Static):
                 Vertical(
                     Vertical( # Contenedor para el selector de servidor
                         Label("Selecciona un servidor:"), # Corregido typo
-                        Select([], id="select_instance"),
+                        Horizontal(
+                            Select([], id="select_instance"),
+                            Button("Añadir Servidor", id="btn_add_server", variant="primary"), # Botón para añadir un servidor
+                        ),
                         Label("Selecciona un cliente"),
-                        Select([], id="select_client"),
+                        Select([], id="select_client",type_to_search = True),
                     ),
                     Static(), # Espaciador o contenido adicional
                     Label("Detalles del Servidor:", classes="details-header"), # Título para la sección de detalles
@@ -53,14 +56,6 @@ class MainAppUI(Static):
                         Horizontal(Label("Endpoint:", classes="field-label"), Label(id="input_endpoint", classes="value-label")),
                         classes="details-container"
                     ),
-                    DataTable(id="clients_table", classes="clients-table"),
-                    
-                    #Horizontal(
-                   #     Label("Añadir Cliente", id="add_client"), # Texto más descriptivo
-                   #     Label("Añadir Servidor", id="add_server", classes="action-link"), # Texto más descriptivo
-                   #     classes="client-actions-bar" # Clase CSS opcional
-                   # ),
-                   
                     #'default', 'error', 'primary', 'success', or 'warning'
                     Horizontal(
                         Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), # Texto más descriptivo
@@ -97,56 +92,45 @@ class TerminalUI(App):
         # Añadir opciones al Select 
         selct_instance.set_options(list_cl)
 
-        #if list_cl:
-        #    selct_instance.set_options(list_cl)
-        #else:
-        #    selct_instance.prompt = "No hay servidores disponibles" # Mensaje si no hay opciones
-
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
-        self.theme = "dracula" 
-        self.load_wg_data_from_json("wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
+        self.theme = "flexoki" 
+        self.load_data("wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
         await self.refresh_instances_list()
-        clients_table = self.query_one("#clients_table", DataTable)
-        clients_table.cursor_type = "row"
-        clients_table.zebra_stripes = False
 
-    def load_wg_data_from_json(self, file_path_arg: str):
+    def load_data(self, path_json: str):
         """Carga wg_data desde un archivo JSON."""
         try:
-            with open(file_path_arg, "r", encoding="utf-8") as f:
+            with open(path_json, "r", encoding="utf-8") as f:
                 data = json.load(f)
             self.wg_data = data  # Siempre el objeto raíz
             if "servers" not in data:
                 self.notify("La clave 'servers' no se encontró en el JSON. Usando datos raíz.", severity="warning", title="Advertencia de Carga")
         except FileNotFoundError:
-            self.notify(f"Archivo no encontrado: {file_path_arg}", severity="error", title="Error de Carga")
+            self.notify(f"Archivo no encontrado: {path_json}", severity="error", title="Error de Carga")
             self.wg_data = {"servers": {}}
         except json.JSONDecodeError:
-            self.notify(f"Error decodificando JSON en el archivo: {file_path_arg}", severity="error", title="Error de Carga")
+            self.notify(f"Error decodificando JSON en el archivo: {path_json}", severity="error", title="Error de Carga")
             self.wg_data = {"servers": {}}
         except Exception as e:
             self.notify(f"Error inesperado al cargar datos: {e}", severity="error", title="Error de Carga")
             self.wg_data = {"servers": {}}
 
     @on(Select.Changed, "#select_instance")
-    def select_client_handler(self, event: Select.Changed) -> None:
+    def select_server_handler(self, event: Select.Changed) -> None:
         """Actualiza el DataTable de clientes al seleccionar un cliente."""
         selected_instance_id = event.value
         slect_client = self.query_one("#select_client", Select)
         # Si no hay selección o no hay datos de servidores, limpiar los campos.
         if selected_instance_id is Select.BLANK or not self.wg_data.get("servers"):
+            slect_client.set_options([])
             self.query_one("#select_client", Select).clear()
-            slect_client_var = []
-            slect_client.clear()
-            slect_client.set_options(slect_client_var)
             self.query_one("#input_pubkey", Label).update("N/D")
             self.query_one("#input_privkey", Label).update("N/D")
             self.query_one("#input_address", Label).update("N/D")
             self.query_one("#input_port", Label).update("N/D")
             self.query_one("#input_dns", Label).update("N/D")
             self.query_one("#input_endpoint", Label).update("N/D")
-            self.query_one("#clients_table", DataTable).clear()
             return
 
         instance = self.wg_data.get("servers", {}).get(selected_instance_id)
@@ -161,35 +145,28 @@ class TerminalUI(App):
         self.query_one("#input_dns", Label).update(instance.get("dns", "N/D"))
         self.query_one("#input_endpoint", Label).update(instance.get("endpoint", "N/D"))
 
-        clients_table = self.query_one("#clients_table", DataTable)
-        clients_table.clear()
-        if not clients_table.columns:
-            clients_table.add_columns("Nombre", "Dirección", "Clave Pública", "AllowedIPs", "Habilitado")
-        
-        # clients_dict = instance.get("clients", {})
-        # for client_id, client_data in clients_dict.items():
-        #     clients_table.add_row(
-        #         client_data.get("name", "N/D"),
-        #         client_data.get("address", "N/D"),
-        #         client_data.get("publicKey", "N/D"),
-        #         client_data.get("allowedIPs", "N/D"),
-        #         "Sí" if client_data.get("enabled", False) else "No",
-        #         key=client_id # Añadir clave para posible referencia futura si es necesario
-        #     )
+        slect_client.clear()
+        clients_dict = instance.get("clients", {})
+        clients = []
+        for client_id, client_data in clients_dict.items():
+            name_id = client_data.get("name", "N/D") + " (" + client_id + ")"
+            clients.append((name_id, client_id))
+
+        slect_client.set_options(clients)
 
     @on(Button.Pressed, "#btn_edit_client")
     def edit_client_handler(self, event: Button.Pressed) -> None:
         """Abre el modal para editar un cliente."""
-        slect_server = self.query_one("#select_instance", Select)
-        if slect_server.value == Select.BLANK:
+        selected_server = self.query_one("#select_instance", Select)
+        selected_client = self.query_one("#select_client", Select)
+        if selected_server.value == Select.BLANK:
             self.notify("Por favor selecciona un servidor primero.", severity="error", title="Error de Selección")
             return
-        clients_table = self.query_one("#clients_table", DataTable)
-        selected_client = clients_table.selected_row
-        if not selected_client:
+        
+        if selected_client.value == Select.BLANK:
             self.notify("Por favor selecciona un cliente primero.", severity="error", title="Error de Selección")
             return
-        modal = Edit_client(self.query_one("#select_instance", Select).value, self.query_one("#clients_table", DataTable) ,self, previous_screen=self)
+        modal = Edit_client(selected_server.value, selected_client.value, self, previous_screen=self)
         self.push_screen(modal)
 
     def compose(self) -> ComposeResult:
@@ -221,45 +198,42 @@ class Edit_client(ModalScreen):
 
     def compose(self) -> ComposeResult:  
         yield Vertical(
-            Horizontal(
-                Label("Nombre del Cliente:"),
-                Input(id="name_client")
+                        Horizontal(
+                Label("privKey:", classes="label_edit_client"),
+                Input(id="input_private_key", classes="input_edit_client", password=True),
+                Button("Mostrar", id="btn_show_private_key", variant="success",classes="edit_client_keys")
             ),
             Horizontal(
-                Label("Dirección del Cliente:"),
-                Input(id="input_client_address")
+                Label("pubKey:", classes="label_edit_client"),
+                Input(id="input_public_key", classes="input_edit_client"),
+                Button("Cambiar", id="btn_show_public_key", variant="default", classes="edit_client_keys")
             ),
             Horizontal(
-                Label("Clave Privada:"),
-                Input(id="input_private_key")
+                Label("presharedKey:", classes="label_edit_client"),
+                Input(id="input_preshared_key", classes="input_edit_client"),
+                Button("⟳", id="btn_show_preshared_key", variant="primary", classes="edit_client_keys")
             ),
             Horizontal(
-                Label("Clave Pública:"),
-                Input(id="input_public_key")
+                Label("name:", classes="label_edit_client"),
+                Input(id="name_client", classes="input_edit_client"),
+                Label("address:", classes="label_edit_client"),
+                Input(id="input_client_address", classes="input_edit_client")),
+          
+            Horizontal(
+                Label("DNS:", classes="label_edit_client"),
+                Input(id="input_dns", classes="input_edit_client"),
+                Label("Keepalive:", classes="label_edit_client"),
+                Input(id="input_persistent_keepalive", classes="input_edit_client")
             ),
             Horizontal(
-                Label("Clave Precompartida:"),
-                Input(id="input_preshared_key")
+                Label("allowedIPs:", classes="label_edit_client"),
+                Input(id="input_allowed_ips", classes="input_edit_client"),
+                Label("Habilitado:", classes="label_edit_client"),
+                Select([("Sí", True), ("No", False)], allow_blank=False, id="select_enabled")
             ),
             Horizontal(
-                Label("DNS:"),
-                Input(id="input_dns")
-            ),
-            Horizontal(
-                Label("Keepalive Persistente:"),
-                Input(id="input_persistent_keepalive")
-            ),
-            Horizontal(
-                Label("Allowed IPs:"),
-                Input(id="input_allowed_ips")
-            ),
-            Horizontal(
-                Label("Habilitado:"),
-                Select([("Sí", True), ("No", False)], id="select_enabled")
-            ),
-            Horizontal(
-                Button("Guardar",id="btn_save_client",variant="primary"),
-                Button("Cancelar",id="btn_cancel_client", variant="error")
+                Button("Guardar",id="btn_save_client",variant="primary",classes="list-btn"),
+                Button("Cancelar",id="btn_cancel_client", variant="error", classes="list-btn")
             )
             ,id="Edit_client"
         )
@@ -280,6 +254,24 @@ class Edit_client(ModalScreen):
         self.query_one("#input_persistent_keepalive", Input).value = str(valor.get("persistentKeepalive", "")) or ""
         self.query_one("#input_allowed_ips", Input).value = valor.get("allowedIPs", "") or ""
         self.query_one("#select_enabled", Select).value = valor.get("enabled", False)
+    
+    @on(Button.Pressed, "#btn_cancel_client")
+    def cancelar(self, event: Button.Pressed) -> None:
+        """Volver a la pantalla de inicio"""
+        self.app.pop_screen()
+    @on(Button.Pressed, "#btn_show_private_key")
+    def btn_show_private_key(self, event: Button.Pressed) -> None:
+        """Mostrar la clave privada."""
+        priv_key_input = self.query_one("#input_private_key", Input)
+        Button_name = self.query_one("#btn_show_private_key", Button)
+        if priv_key_input.password == True:
+            priv_key_input.password = False
+            Button_name.label = "Ocultar"
+        else:
+            priv_key_input.password = True
+            Button_name.label = "Mostrar"
+        #priv_key_input.focus()
+
 
 class Delete_client(ModalScreen):
     """A widget to delete a client."""

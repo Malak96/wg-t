@@ -1,8 +1,14 @@
 MainAppUI {
         align: center middle;
         border: #ffffff;
-    }    Horizontal {
         width: 100%;
+        height: 100%;
+    }    
+    Horizontal {
+        width: 100%;
+    }
+    .main-container {
+        position: relative;
     }
     .left-panel {
         width: 20;      /* Fija el ancho a 20 columnas */
@@ -30,7 +36,7 @@ MainAppUI {
         min-width: 0;
         text-align: center;
         padding: 0;
-        margin: 0;
+        margin: 0 1 0 1;
     }
     .list-view {
         overflow: auto;    /* Permite scroll si el texto es largo */
@@ -56,14 +62,7 @@ MainAppUI {
         height: 1;         /* Hace cada fila de detalle compacta verticalmente */
     }
 
-    .field-label {
-        text-style: bold;
-        padding: 0 1 0 0;  /* Padding: 0 top, 1 right, 0 bottom, 0 left */
-        text-align: left;
-        width: auto;       /* Se ajusta al contenido del label */
-        max-width: 12;     /* Limita el ancho máximo (ej. "PrivKey:" o "Endpoint:") */
-        height: 1;         /* Asegurar altura 1 */
-    }
+
     .value-label {
         /* text-style: bold; */ /* Opcional, quitar si se ve muy cargado */
         padding: 0;        /* Sin padding extra, field-label ya da separación a su derecha */
@@ -102,9 +101,6 @@ MainAppUI {
         overflow: auto;
         box-sizing: border-box;
     }
-
-
-
 #Add_client {
     grid-size: 1;
     grid-rows: 1fr 3;
@@ -115,20 +111,6 @@ MainAppUI {
     align: center middle;
 }
 
-/* Botón tipo link personalizado para Textual CSS */
-#add_client {
-    text-style: bold;
-    color: green;
-    background: rgb(0, 109, 15);
-    border-bottom: solid green;
-    padding: 0 1;
-}
-#add_client:hover {
-    color: rgb(255, 255, 255);
-    background: #2ac04a;
-    border-bottom: double rgb(0, 48, 0);
-}
-
 Edit_client {
     align: center middle;
 }
@@ -137,7 +119,23 @@ Edit_client {
     grid-size: 1;
     grid-rows: 1fr 3;
     width: 90;
-    height: 45;
-    border: thick $background 80%;
+    height: 30;
+    border: thick rgb(255, 255, 255) 20%;
     background: $surface;
+}
+.label_edit_client {
+    text-style: bold;
+    padding: 1;
+    width: 15;
+    align: right middle;
+    text-align: right;
+}
+.input_edit_client {
+    width: 1fr;
+}
+.edit_client_keys {
+    width:10;
+    height: 3;
+    padding: 0;
+    margin: 0;
 }
