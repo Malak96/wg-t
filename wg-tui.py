@@ -34,7 +34,8 @@ class MainAppUI(Static):
         with containers.Container(classes="main-container"): # Contenedor interno
             yield self.title_text_widget
             yield self.info_widget
-            yield Horizontal(    
+            yield Horizontal(  
+             
                 Vertical(
                     Vertical( # Contenedor para el selector de servidor
                         Label("Selecciona un servidor:"), # Corregido typo
@@ -44,8 +45,9 @@ class MainAppUI(Static):
                         ),
                         Label("Selecciona un cliente"),
                         Select([], id="select_client",type_to_search = True),
+                        classes="details-container" 
                     ),
-                    Static(), # Espaciador o contenido adicional
+                   
                     Label("Detalles del Servidor:", classes="details-header"), # Título para la sección de detalles
                     Vertical(
                         Horizontal(Label("PubKey:", classes="field-label",variant="warning"), Label(id="input_pubkey", classes="value-label")),
@@ -61,10 +63,11 @@ class MainAppUI(Static):
                         Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), # Texto más descriptivo
                         Button("Eliminar Cliente", id="btn_delete_client", classes="list-btn", variant="error"), # Texto más descriptivo
                         classes="button-row"
-                    ),
-                    classes="main-content-column" # Clase CSS opcional para la columna vertical principal
-                ),
-                classes="top-level-horizontal-layout" # Clase CSS opcional
+                    ), 
+                    classes="horizontal-container"
+                     # Clase CSS opcional para la columna vertical principal
+                )
+                 # Clase CSS opcional
             )
 
 # Clase principal de la aplicación
