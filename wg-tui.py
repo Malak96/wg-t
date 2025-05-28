@@ -37,37 +37,40 @@ class MainAppUI(Static):
             yield Horizontal(  
              
                 Vertical(
-                    Vertical( # Contenedor para el selector de servidor
+                    Vertical( # Contenedor para el selector de servidor 
                         Label("Selecciona un servidor:"), # Corregido typo
                         Horizontal(
                             Select([], id="select_instance"),
                             Button("Añadir Servidor", id="btn_add_server", variant="primary"), # Botón para añadir un servidor
+                            classes="select-server-container" # Clase CSS opcional para estilizar el contenedor
+                        ),
+                        Static(),  
+                        Label("Configuracion del Servidor:", classes="details-header"), # Título para la sección de detalles
+                        Vertical(
+                            Horizontal(Label("PubKey:", classes="field-label"), Label(id="input_pubkey", classes="value-label")),
+                            Horizontal(Label("PrivKey:", classes="field-label"), Label(id="input_privkey", classes="value-label")),
+                            Horizontal(Label("Address:", classes="field-label"), Label(id="input_address", classes="value-label")),
+                            Horizontal(Label("Puerto:", classes="field-label"), Label(id="input_port", classes="value-label")),
+                            Horizontal(Label("DNS:", classes="field-label"), Label(id="input_dns", classes="value-label")),
+                            Horizontal(Label("Endpoint:", classes="field-label"), Label(id="input_endpoint", classes="value-label")),
+                            classes="details-container"
                         ),
                         Label("Selecciona un cliente"),
-                        Select([], id="select_client",type_to_search = True),
-                        classes="details-container" 
-                    ),
-                   
-                    Label("Detalles del Servidor:", classes="details-header"), # Título para la sección de detalles
-                    Vertical(
-                        Horizontal(Label("PubKey:", classes="field-label",variant="warning"), Label(id="input_pubkey", classes="value-label")),
-                        Horizontal(Label("PrivKey:", classes="field-label"), Label(id="input_privkey", classes="value-label")),
-                        Horizontal(Label("Address:", classes="field-label"), Label(id="input_address", classes="value-label")),
-                        Horizontal(Label("Puerto:", classes="field-label"), Label(id="input_port", classes="value-label")),
-                        Horizontal(Label("DNS:", classes="field-label"), Label(id="input_dns", classes="value-label")),
-                        Horizontal(Label("Endpoint:", classes="field-label"), Label(id="input_endpoint", classes="value-label")),
-                        classes="details-container"
+                        Horizontal(
+                            Select([], id="select_client",type_to_search = True),
+                            classes="select-client-container" # Clase CSS opcional para estilizar el contenedor
+                        ),
+                        classes="server-client-select-container" # Clase CSS opcional para estilizar el contenedor
                     ),
                     #'default', 'error', 'primary', 'success', or 'warning'
                     Horizontal(
                         Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), # Texto más descriptivo
                         Button("Eliminar Cliente", id="btn_delete_client", classes="list-btn", variant="error"), # Texto más descriptivo
                         classes="button-row"
-                    ), 
-                    classes="horizontal-container"
-                     # Clase CSS opcional para la columna vertical principal
-                )
-                 # Clase CSS opcional
+                    ),
+                    classes="main-details-vertical" # Clase CSS opcional para la columna vertical principal
+                ),
+                classes="horizontal-container"
             )
 
 # Clase principal de la aplicación
