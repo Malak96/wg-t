@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "99031baf-e490-482d-808e-88959fb295a6": {
+      "name": "wg_one",
+      "privateKey": "mF6zq0K9+RPFDg5vG9Cu0xP7L1abmnZQb5BHj3QTR0A=",
+      "publicKey": "b+nWcIhwoSJlReVwOY0B0NmqwpEtomCTEMx8oC1bxzA=",
+      "address": "10.10.1.1/24",
+      "port": "68681",
+      "dns": "8.8.8.8",
+      "enable": true,
+      "endpoint": "mi_endpoint.com"
+    }
+  }
+}
