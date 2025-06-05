@@ -6,7 +6,7 @@ from textual.screen import ModalScreen
 from textual.containers import Vertical, Horizontal
 
 # Importar los widgets básicos para la UI
-from textual.widgets import Button, Label, Input, Static, Select
+from textual.widgets import Button, Label, Input, Select, Switch
 
 import json
 import ipaddress
@@ -38,29 +38,30 @@ class Add_edit_client(ModalScreen):
             Horizontal(
                 Label("presharedKey:", classes="label_edit_client"),
                 Input(id="input_preshared_key", classes="input_edit_client"),
-                Button("⟳", id="btn_show_preshared_key", variant="primary", classes="edit_client_keys")
+                Switch(id="pshk_switch", value= True)
+                #Button("⟳", id="btn_show_preshared_key", variant="primary", classes="edit_client_keys")
             ),
             Horizontal(
                 Label("name:", classes="label_edit_client"),
-                Input(id="name_client", classes="input_edit_client"),
+                Input(id="name", classes="input_edit_client"),
                 Label("address:", classes="label_edit_client"),
-                Input(id="input_client_address", classes="input_edit_client")),
+                Input(id="input_address", classes="input_edit_client")),
           
             Horizontal(
                 Label("DNS:", classes="label_edit_client"),
                 Input(id="input_dns", classes="input_edit_client"),
                 Label("Keepalive:", classes="label_edit_client"),
-                Input(id="input_persistent_keepalive",placeholder="24", classes="input_edit_client")
+                Input(id="input_persistent_keepalive",value="0", classes="input_edit_client")
             ),
             Horizontal(
                 Label("allowedIPs:", classes="label_edit_client"),
-                Input(id="input_allowed_ips",placeholder=" 0.0.0.0/0, ::/0", classes="input_edit_client"),
+                Input(id="input_allowed_ips",value=" 0.0.0.0/0, ::/0", classes="input_edit_client"),
                 Label("Habilitado:", classes="label_edit_client"),
                 Select([("Sí", True), ("No", False)], allow_blank=False, id="select_enabled")
             ),
             Horizontal(
-                Button("Guardar",id="btn_save_client",variant="primary",classes="list-btn"),
-                Button("Cancelar",id="btn_cancel_client", variant="error", classes="list-btn"),
+                Button("Guardar",id="btn_save",variant="primary",classes="list-btn"),
+                Button("Cancelar",id="btn_cancel", variant="error", classes="list-btn"),
                 classes="list-btn"
             )
             ,id="Add_edit_client"
@@ -74,52 +75,61 @@ class Add_edit_client(ModalScreen):
         if self.verify == True:
             """Carga los datos del cliente."""
             valor = self.app_ref.wg_data.get("servers", {}).get(self.id_server, {}).get("clients", {}).get(self.id_client, {})
-            self.query_one("#name_client", Input).value = valor.get("name", "") or ""
-            self.query_one("#input_client_address", Input).value = valor.get("address", "") or ""
+            self.query_one("#name", Input).value = valor.get("name", "") or ""
+            self.query_one("#input_address", Input).value = valor.get("address", "") or ""
             self.query_one("#input_private_key", Input).value = valor.get("privateKey", "") or ""
             self.query_one("#input_public_key", Input).value = valor.get("publicKey", "") or ""
-            self.query_one("#input_preshared_key", Input).value = valor.get("PresharedKey", "") or ""
+            if valor.get("presharedKey",False):
+                self.query_one("#input_preshared_key", Input).value = valor.get("presharedKey")
+                self.query_one("#input_preshared_key", Input).disabled = False
+                self.query_one("#pshk_switch",Switch).value = True
+            else:
+                self.query_one("#input_preshared_key", Input).value = ""
+                self.query_one("#input_preshared_key", Input).disabled = True
+                self.query_one("#pshk_switch",Switch).value = False
             self.query_one("#input_dns", Input).value = valor.get("dns", "") or ""
             self.query_one("#input_persistent_keepalive", Input).value = str(valor.get("persistentKeepalive", "")) or ""
             self.query_one("#input_allowed_ips", Input).value = valor.get("allowedIPs", "") or ""
-            self.query_one("#select_enabled", Select).value = valor.get("enabled", False)
+            self.query_one("#select_enabled", Select).value = valor.get("enable", False)
         else:
-            server_data = self.app_ref.wg_data.get("servers", {}).get(self.id_server, {})
-            clients = server_data.get("clients",{})
-            new_address_client = self.get_next_available_ip("",server_data.get("address",{}))
-            self.gen_keys(False)  # Generar claves si no se está editando un cliente existente
-            self.gen_keys(True)
-            ##self.query_one("#name_client", Input).value = valor.get("name", "") or ""
-            self.query_one("#input_client_address", Input).placeholder = new_address_client
-            self.query_one("#input_dns", Input).placeholder = server_data.get("dns", "") or ""
-            
-
-            
-            
-    def gen_keys(self, key_type: bool ) -> None:
-        self.key_type = key_type
-        if key_type == True:
+            server_data = self.app_ref.wg_data.get("servers").get(self.id_server)
+            cliens_data = self.app_ref.wg_data.get("servers").get(self.id_server).get("clients",{})
+            #clients = server_data.get("clients",{})
+            new_address_client = self.get_next_available_ip(cliens_data,server_data.get("address",{}))
             """Genera una clave precompartida y la muestra en el campo correspondiente."""
             psk = works.generate_preshared_key()
-            self.query_one("#input_preshared_key", Input).value = psk
-        elif key_type == False:
             priv_key, pub_key = works.generate_keys()
             self.query_one("#input_private_key", Input).value = priv_key
             self.query_one("#input_public_key", Input).value = pub_key
-        
+            self.query_one("#input_preshared_key", Input).value = psk
+            self.query_one("#input_address", Input).value = new_address_client
+            self.query_one("#input_dns", Input).value = server_data.get("dns", "") or ""
+    @on(Switch.Changed, "#pshk_switch")
+    def pshk_switch(self, event:Switch.Changed) -> None:
+        if self.query_one("#pshk_switch",Switch).value:
+            self.query_one("#input_preshared_key", Input).disabled = False
+            psk = works.generate_preshared_key()
+            self.query_one("#input_preshared_key", Input).value = psk
+        else:
+            self.query_one("#input_preshared_key", Input).value = ""
+            self.query_one("#input_preshared_key", Input).disabled = True
+            
+
+          
     @on(Button.Pressed, "#btn_gen_key")
     def btn_gen_key(self, event: Button.Pressed) -> None:
         """Generar claves y mostrarlas en los campos correspondientes."""
-        self.gen_keys(False)
+        priv_key, pub_key = works.generate_keys()
+        self.query_one("#input_private_key", Input).value = priv_key
+        self.query_one("#input_public_key", Input).value = pub_key
         
     @on(Button.Pressed, "#btn_show_preshared_key")
     def btn_show_preshared_key(self, event: Button.Pressed) -> None:
         """Generar una clave precompartida y mostrarla en el campo correspondiente."""
-        self.gen_keys(True)
+        psk = works.generate_preshared_key()
+        self.query_one("#input_preshared_key", Input).value = psk
         
-
-        
-    @on(Button.Pressed, "#btn_cancel_client")
+    @on(Button.Pressed, "#btn_cancel")
     def cancelar(self, event: Button.Pressed) -> None:
         """Volver a la pantalla de inicio"""
         self.app.pop_screen()
@@ -135,6 +145,45 @@ class Add_edit_client(ModalScreen):
         else:
             priv_key_input.password = True
             Button_name.label = "Mostrar"
+            
+    @on(Button.Pressed, "#btn_save")
+    async def btn_save_handler(self, event: Button.Pressed) -> None:
+        if self.query_one("#name", Input).value == "":
+            self.notify("Debe proporcionar un nombre para el servidor.",severity="information")
+            return
+        #if self.query_one("#input_address", Input).value == "" or self.query_one("#port",Input).value == "" or self.query_one("#endpoint", Input).value == "" or self.query_one("#input_private_key", Input).value == "" or self.query_one("#input_public_key", Input).value == "":
+        #    self.notify("Los siguientes camposs no pueden quedar vacios: \n - privateKey\n - publicKey\n - address\n - port\n - dns\n - endpoint",severity="warning")
+        #    return
+        if self.save_data():
+            await self.app_ref.refresh_server_select()
+            self.notify(f"Se guardo correctamente la configutacion de {self.query_one("#name", Input).value}",severity="information",title="Guardado")
+            self.app.pop_screen()  # Cerrar la pantalla actual
+        else:
+            self.notify("Ocurrio un error al guardar los datos no se guardo la configuracion.",severity="error",title="Error")
+        
+    def save_data(self):
+        try:
+            client_new={
+                "name":self.query_one("#name", Input).value,
+                "privateKey":self.query_one("#input_private_key", Input).value,
+                "publicKey":self.query_one("#input_public_key", Input).value,
+                "presharedKey":self.query_one("#input_preshared_key", Input).value,
+                "persistentKeepalive":self.query_one("#input_persistent_keepalive", Input).value or 0,
+                "address":self.query_one("#input_address", Input).value,
+                "dns":self.query_one("#input_dns", Input).value,
+                "allowedIPs":self.query_one("#input_allowed_ips", Input).value,
+                "enable":self.query_one("#select_enabled", Select).value
+                }
+            if "clients" not in self.app_ref.wg_data["servers"][self.id_server]:
+                self.app_ref.wg_data["servers"][self.id_server]["clients"]={}
+            self.app_ref.wg_data["servers"][self.id_server]["clients"][self.id_client] = client_new
+        
+            with open("wg_data.json", 'w', encoding='utf-8') as f:
+                json.dump(self.app_ref.wg_data, f, indent=2, ensure_ascii=False)
+            return True # Indicar éxito
+        except Exception as e:
+            return False
+            
     
     def get_next_available_ip(self, clients_data, server_address):
         """Obtiene la siguiente dirección IP disponible en la subred especificada por el servidor."""

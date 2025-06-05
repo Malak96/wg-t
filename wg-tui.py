@@ -6,7 +6,7 @@ from textual.screen import ModalScreen
 from textual.containers import Container, Vertical, Horizontal, Grid
 
 # Importar los widgets básicos para la UI
-from textual.widgets import Button, Label, Input, Static, Select
+from textual.widgets import Button, Label, Input, Static, Select,Switch
 
 import json
 from textual.widget import Widget
@@ -14,6 +14,7 @@ from textual.binding import Binding
 import clients, servers
 import uuid
 import os
+from confirm_msg import ConfirmModal
 
 # Variable global para la ruta del archivo de datos, aunque es mejor pasarla como argumento o como atributo de la app.
 # FILE_PATH_WG_DATA = "wg_data.json" # Ejemplo de constante
@@ -27,15 +28,12 @@ class MainAppUI(Static):
             yield Horizontal(
                 Vertical(
                     Vertical( # Contenedor para el selector de servidor 
-                        Horizontal(
+                        Vertical(
+                            Horizontal(
                             Select([], id="select_server"),
-                            Button("Añadir Servidor", id="btn_add_server", variant="primary"), # Botón para añadir un servidor
-                            id="select_server", # ID para el contenedor del selector de servidor
-                            classes="select-server-container" # Clase CSS opcional para estilizar el contenedor
-                        ),
-  
-                        Label("Detalles del Servidor:", classes="details-header"), # Título para la sección de detalles
-                        Horizontal(
+                            Switch(id="enable_server")
+                            ),
+                            Label("Detalles del Servidor:", classes="details-header",variant="secondary"),
                             Vertical(
                                 Horizontal(Label("PubKey:", classes="field-label"), Label(id="input_pubkey", classes="value-label")),
                                 Horizontal(Label("Address:", classes="field-label"), Label(id="input_address", classes="value-label")),
@@ -44,38 +42,39 @@ class MainAppUI(Static):
                                 Horizontal(Label("Endpoint:", classes="field-label"), Label(id="input_endpoint", classes="value-label")),
                                 classes="details-container"
                             ),
-                            Vertical(
-                                Button("Configurar", id="btn_configure_server", variant="primary"), # Botón para configurar el servidor
-                                Button("Eliminar", id="btn_delete_server", variant="error",), # Botón para eliminar el servidor
-                                classes="server-btn"
+                            Horizontal(
+                                Button("Configurar", id="btn_configure_server", variant="primary"), 
+                                Button("Nuevo", id="btn_add_server", variant="default"),
+                                Button("Eliminar", id="btn_delete_server", variant="error",) 
                             ),
-                            id="server_details", # ID para el contenedor de detalles del servidor
-                            classes="server-details-container" # Clase CSS opcional para estilizar el contenedor de detalles del servidor
+                            id="select_server",
+                            classes="select-server-container"
                         ),
+
                         Horizontal(
                          
-                                Select([], id="select_client",type_to_search = True),
-                                Button("Nuevo",id="add_client"),
+                                Select([], id="select_client"),
+                                Switch(id="enable_client"),
                                 id="select_client_h",
-                                classes="select-client-container" # Clase CSS opcional para estilizar el contenedor
+                                classes="select-client-container" 
                             ),
-                        Label("Detalles del Cliente:", classes="details-header"), # Título para la sección de detalles
-                        Horizontal(
+                        Horizontal(   
                             Vertical(
+                                Label("Detalles del Cliente:", classes="details-header",variant="primary"),
                                 Horizontal(Label("Name:", classes="field-label"), Label(id="name_client", classes="value-label")),
                                 Horizontal(Label("PubKey:", classes="field-label"), Label(id="input_pubkey_client", classes="value-label")),
                                 Horizontal(Label("Address:", classes="field-label"), Label(id="input_address_client", classes="value-label")),
-                                Horizontal(Label("Puerto:", classes="field-label"), Label(id="input_port_client", classes="value-label")),
                                 Horizontal(Label("DNS:", classes="field-label"), Label(id="input_dns_client", classes="value-label")),
-                                Horizontal(Label("Endpoint:", classes="field-label"), Label(id="input_endpoint_client", classes="value-label")),
+                               
                                 classes="details-container"
                             ),
-                            classes="server-details-container" # Clase CSS opcional para estilizar el contenedor
+                            classes="server-details-container" 
                          ),
                     #'default', 'error', 'primary', 'success', or 'warning'
                     Horizontal(
-                        Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), # Texto más descriptivo
-                        Button("Eliminar Cliente", id="btn_delete_client", classes="list-btn", variant="error"), # Texto más descriptivo
+                        Button("Editar Cliente", id="btn_edit_client", classes="list-btn"), 
+                        Button("Eliminar Cliente", id="btn_delete_client", classes="list-btn", variant="error"), 
+                        Button("Nuevo",id="add_client"),
                         classes="button-row"
                     ),
                     classes="main-details-vertical" # Clase CSS opcional para la columna vertical principal
@@ -87,28 +86,48 @@ class MainAppUI(Static):
 
 # Clase principal de la aplicación
 class TerminalUI(App):
+
+
     TITLE = "WG-TUI - WireGuard Manager" # Título de la ventana de la aplicación
-    #ENABLE_COMMAND_PALETTE = False
+    ENABLE_COMMAND_PALETTE = False
     CSS_PATH = "styles.css"
 
     async def refresh_server_select(self):
-        """Actualiza el ListView de instancias según wg_data."""
-        selct_instance = self.query_one("#select_server", Select)
-        selct_instance.clear()
-        list_cl = []
-        # Asegúrate de iterar sobre los servidores, no sobre el diccionario raíz
-        for id_, instance in self.wg_data["servers"].items():
-            # Añadir opciones al Select
-            list_cl.append((instance["name"],id_))
-        # Añadir opciones al Select 
-        selct_instance.set_options(list_cl)
+        selct_server = self.query_one("#select_server", Select)
+        select_client = self.query_one("#select_client", Select)
+        previous_value_server = selct_server.value
+        previous_value_client = select_client.value
+
+        # Recarga servidores
+        selct_server.clear()
+        list_cl = [(instance["name"], id_) for id_, instance in self.wg_data["servers"].items()]
+        selct_server.set_options(list_cl)
+        # Restaurar selección de servidor
+        if previous_value_server in self.wg_data["servers"]:
+            selct_server.value = previous_value_server
+            self.notify(previous_value_server)
+        else:
+            selct_server.value = Select.BLANK
+
+        current_server = selct_server.value
+        clients_dict = self.wg_data["servers"].get(current_server, {}).get("clients", {})
+        select_client.clear()
+        list_clients = [(client_data.get("name", ""), client_id) for client_id, client_data in clients_dict.items()]
+        select_client.set_options(list_clients)
+        # Restaurar selección de cliente
+        if previous_value_client in clients_dict:
+            select_client.value = previous_value_client
+            self.notify(previous_value_client)
+        else:
+            select_client.value = Select.BLANK
+            self.notify("xx")
 
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
-        self.theme = "gruvbox"
+        self.theme = "flexoki"
         self.load_data("wg_data.json") # Considera usar una constante o atributo de clase para "wg_data.json"
         self.query_one("#main_app_ui_container", Horizontal).border_title = "WG-TUI - A simple terminal interface for WireGuard" 
-        self.query_one("#select_server", Horizontal).border_title = "Selecciona un servidor"
+        self.query_one("#select_server", Vertical).border_title = "Selecciona un servidor"
         self.query_one("#select_client_h",Horizontal).border_title = "Selecciona un cliente"
         await self.refresh_server_select()
 
@@ -132,13 +151,23 @@ class TerminalUI(App):
         except Exception as e:
             self.notify(f"Error inesperado al cargar datos: {e}", severity="error", title="Error de Carga")
             self.wg_data = {"servers": {}}
+    
+    def on_switch_changed(self, event:Switch.Changed) -> None:
+        if event.switch.id == "enable_server":
+            self.wg_data["servers"][self.query_one("#select_server",Select).value]["enable"]= event.switch.value
+            self.notify("switch server")
+        elif event.switch.id == "enable_client":
+            self.wg_data["servers"][self.query_one("#select_server",Select).value]["clients"][self.query_one("#select_client",Select).value]["enable"]= event.switch.value
+            self.notify("switch client")
+            
+        with open("wg_data.json", 'w', encoding='utf-8') as f:
+                json.dump(self.wg_data, f, indent=2, ensure_ascii=False)
 
     @on(Select.Changed, "#select_server")
     def select_server_handler(self, event: Select.Changed) -> None:
         """Actualiza el DataTable de clientes al seleccionar un cliente."""
         selected_instance_id = event.value
         slect_client = self.query_one("#select_client", Select)
-        # Si no hay selección o no hay datos de servidores, limpiar los campos.
         if selected_instance_id is Select.BLANK or not self.wg_data.get("servers"):
             slect_client.set_options([])
             self.query_one("#select_client", Select).clear()
@@ -159,7 +188,7 @@ class TerminalUI(App):
         self.query_one("#input_port", Label).update(str(instance.get("port", "")))
         self.query_one("#input_dns", Label).update(instance.get("dns", ""))
         self.query_one("#input_endpoint", Label).update(instance.get("endpoint", ""))
-
+        
         slect_client.clear()
         clients_dict = instance.get("clients", {})
         clients = []
@@ -168,22 +197,17 @@ class TerminalUI(App):
             clients.append((name_id, client_id))
 
         slect_client.set_options(clients)
-        
+        self.notify("limpie!!")
+    
     @on(Select.Changed, "#select_client")
     def select_client_handler(self, event: Select.Changed) -> None:
-        """Actualiza el DataTable de clientes al seleccionar un cliente."""
-        slect_client = self.query_one("#select_client", Select)
         server_id = self.query_one("#select_server", Select).value
         selected_client_id = event.value
-        # Si no hay selección o no hay datos de servidores, limpiar los campos.
         if selected_client_id is Select.BLANK or not self.wg_data.get("servers", {}).get(self.query_one("#select_server", Select).value, {}).get("clients", {}):
-            slect_client.set_options([])
             self.query_one("#name_client", Label).update("")
             self.query_one("#input_pubkey_client", Label).update("")
             self.query_one("#input_address_client", Label).update("")
-            self.query_one("#input_port_client", Label).update("")
             self.query_one("#input_dns_client", Label).update("")
-            self.query_one("#input_endpoint_client", Label).update("")
             return
 
         client_data = self.wg_data.get("servers", {}).get(server_id, {}).get("clients", {}).get(selected_client_id)
@@ -194,17 +218,16 @@ class TerminalUI(App):
         self.query_one("#name_client", Label).update(client_data.get("name", ""))
         self.query_one("#input_pubkey_client", Label).update(client_data.get("publicKey", ""))
         self.query_one("#input_address_client", Label).update(client_data.get("address", ""))
-        self.query_one("#input_port_client", Label).update(str(client_data.get("port", "")))
         self.query_one("#input_dns_client", Label).update(client_data.get("dns", ""))
-        self.query_one("#input_endpoint_client", Label).update(client_data.get("endpoint", ""))
   
     @on(Button.Pressed, "#add_client")
     def add_client_handler(self, event: Button.Pressed) -> None:
+        new_id_client = str(uuid.uuid4())
         selected_server = self.query_one("#select_server", Select)
         if selected_server.value == Select.BLANK:
             self.notify("Tienes que es escoger un servidor para agerar un cliente.", severity="warning", title="Selecciona un servidor.")
             return
-        modal = clients.Add_edit_client(selected_server.value, "", self, False , previous_screen=self)
+        modal = clients.Add_edit_client(selected_server.value, new_id_client, self, False , previous_screen=self)
         self.push_screen(modal)
 
     @on(Button.Pressed, "#btn_edit_client")
@@ -223,67 +246,63 @@ class TerminalUI(App):
         self.push_screen(modal)
 
     @on(Button.Pressed, "#btn_add_server")
-    def btn_add_server_handler(self, event: Button.Pressed)-> None:
+    def btn_add_server_handler(self)-> None:
         new_id_server = str(uuid.uuid4())
-        modal = servers.Add_edit_server(new_id_server, self, True, previous_screen=self)
+        modal = servers.Add_edit_server(new_id_server, True, previous_screen=self)
+        self.push_screen(modal)
+        
+    @on(Button.Pressed, "#btn_delete_server")
+    def btn_delete_server_handler(self, event: Button.Pressed) -> None:
+        selected_server = self.query_one("#select_server", Select)
+        if selected_server.value == Select.BLANK:
+            self.notify("Por favor selecciona un servidor primero.", severity="error", title="Error de Selección")
+            return
+        name = self.wg_data.get("servers",{}).get(selected_server.value,{}).get("name",{})
+
+        modal = ConfirmModal(
+            f"¿Estás seguro de que deseas eliminar el Servidor '{name}'? Esta acción no se puede deshacer.",
+            on_confirm=lambda: self.del_reg(selected_server.value, None, name)
+        )
+        self.push_screen(modal)
+    
+    @on(Button.Pressed, "#btn_delete_client")
+    def delete_client_handler(self, event: Button.Pressed) -> None:
+        selected_server = self.query_one("#select_server", Select)
+        selected_client = self.query_one("#select_client", Select)
+        if selected_server.value == Select.BLANK:
+            self.notify("Por favor selecciona un servidor primero.", severity="error", title="Error de Selección")
+            return
+        if selected_client.value == Select.BLANK:
+            self.notify("Por favor selecciona un cliente primero.", severity="error", title="Error de Selección")
+            return
+        name = self.query_one("#name_client", Label).renderable
+
+        modal = ConfirmModal(
+            f"¿Estás seguro de que deseas eliminar el cliente '{name}'? Esta acción no se puede deshacer.",
+            on_confirm=lambda: self.del_reg(selected_server.value, selected_client.value, name)
+        )
         self.push_screen(modal)
 
+        
+    async def del_reg(self,id_server,id_client,item_name):
+        try:
+            if id_client == None:
+                del self.wg_data["servers"][id_server]
+            else:
+                del self.wg_data["servers"][id_server]["clients"][id_client]
+            with open("wg_data.json", "w", encoding="utf-8") as f:
+                json.dump(self.wg_data, f, indent=2, ensure_ascii=False)
+            self.notify(f"'{item_name}' fue eliminado correctamente.", severity="success", title="Eliminado")
+            await self.refresh_server_select()
+        except Exception as e:
+            self.notify(f"Error al eliminar {item_name}: {e}", severity="error", title="Error")
+            
     def compose(self) -> ComposeResult:
         """Compone la UI principal de la aplicación."""
         yield MainAppUI(
             id="main_app_ui_container",
             classes="main_app_ui_frame" # Clase para estilizar el borde en CSS
         )
-
-class Delete_client(ModalScreen):
-    """A widget to delete a client."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
-        super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
-
-
-class Add_server(ModalScreen):
-    """A widget to add a server."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
-        super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
-class Edit_server(ModalScreen):
-    """A widget to edit a server."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
-        super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
-
-class Delete_server(ModalScreen):
-    """A widget to delete a server."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
-        super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
-
-class Close(ModalScreen):
-    """A widget to close the app."""
-    def __init__(self, input_label: str) -> None:
-        self.input_label = input_label
-        super().__init__()
-
-    def compose(self) -> ComposeResult:  
-        yield Label(self.input_label)
-        yield Input()
 
 # --- Bloque de ejecución ---
 if __name__ == "__main__":

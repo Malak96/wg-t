@@ -8,7 +8,143 @@
       "port": "68681",
       "dns": "8.8.8.8",
       "enable": true,
-      "endpoint": "mi_endpoint.com"
+      "endpoint": "mi_endpoint.com",
+      "clients": {
+        "2f505b2d-fafb-4eab-af56-03ba52e598b8": {
+          "name": "pepito",
+          "privateKey": "wGH3lwpQrsSTN3CINj1Psqu6KHZ+JWFyF8kUbDaONl8=",
+          "publicKey": "HaQRWVUKtk6E11MHXWlwI9rwNCBa3ux5XF/qI/3aPBQ=",
+          "presharedKey": "hLZNIOZw+tLueP2uuQ1B5EA4iEs/GzTc7uAijrM8/L0=",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.2/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": "1111",
+          "enable": true
+        },
+        "0b3e8755-4263-4fca-95ba-4ebf275606c6": {
+          "name": "juan",
+          "privateKey": "UPMK9YIflPSTyhu2TIcSuv9eQ86Gx8UbvcXM06U5mnM=",
+          "publicKey": "CRtLLRp7X7BnFvta13NXC9kxaloMROJBJUt+OwXM4gA=",
+          "presharedKey": "cxBfFdPef9LtgB0Xd8+VtLhRqgZbrkkv1bw7U4l3mgk=",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.3/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": "",
+          "enable": true
+        },
+        "13d7fb82-d892-4b31-8f87-a936a91cbbe7": {
+          "name": "benito_camelas",
+          "privateKey": "KH09QqVsq9fU/j35BaaEO3xp6k+XXvn5JYsE2v5QoV0=",
+          "publicKey": "rYmEuWzuvbHyGc8cTgUFNmN30rA2uH2Ir0/yjfG09EU=",
+          "presharedKey": "BDfLpPnVMXTc4mSHw7QQ3ctyYJyUopC+F/Z9hsLV3vY=",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.4/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        },
+        "2925dd29-0553-4cc6-b905-b277870fb34a": {
+          "name": "fofo",
+          "privateKey": "MAjBzcv3oirMGQcpOC0/TjbCJ+DN67KHcSeND+iwXnQ=",
+          "publicKey": "myctyrtaid1GOV6ju9O0X6CZKv7enfkXrzluJWmUekM=",
+          "presharedKey": "giU6dxMh1J8NZPaKTOZOSQhsGHMZG6X4s399dFZr6CY=",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.6/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        },
+        "5ef15730-b1ef-47ec-9476-0f53aa7a5ee0": {
+          "name": "rene-gado",
+          "privateKey": "KDq3IA42yXlitaTpJ2J7SMK8ahkyCxJV1g7y/qOYAF0=",
+          "publicKey": "ze3i5xqjiY5p6BoSqMEUzX18LVQZ1aHv39XSlU7igl4=",
+          "presharedKey": "pTRV2Wud4DuZzo6P4m8At2/Q7aaUyFwMB8k9cSgGV6E=",
+          "persistentKeepalive": "24",
+          "address": "10.10.1.8/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        },
+        "f41ae741-4651-4121-8dfa-d7dfc3356fde": {
+          "name": "juanito",
+          "privateKey": "2Lz9wrsc/r5QyOiEk0UeDjcuVj2eskJmgHzBeMYYqUI=",
+          "publicKey": "zWRt7XWocW9+cbz+lBHXJyrlurlWM0+v9pkcF0QCDjM=",
+          "presharedKey": "",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.9/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": "",
+          "enable": true
+        }
+      }
+    },
+    "fab0a987-e4e1-4b11-bb9e-83087c7804e4": {
+      "name": "wg_2",
+      "privateKey": "ILiVXyYMuhkvFaszeWDL4p+Ve5v3QHzTbKDfvKU+klE=",
+      "publicKey": "zn74kP7deGHifpHWuehmW7La0PTbnyRy8iOG6hqAM3I=",
+      "address": "18.13.1.1/24",
+      "port": "34574",
+      "dns": "9.9.9.9",
+      "enable": true,
+      "endpoint": "984.344.232.2.2",
+      "clients": {
+        "7205c113-f440-400c-abcd-a823492735a8": {
+          "name": "dago_",
+          "privateKey": "CE1XLBvsjA6wug9Cdpd9F25PaBTzoV8M3IlWNckv3U0=",
+          "publicKey": "SQaVqgmOW5KOz3V2/KDM20T8TpcmYE+t31CrOrVyAmA=",
+          "presharedKey": "rFp77fjSM+CLF0JEMpCHDQg7f7CEhFmN5m+G6UVbU+M=",
+          "persistentKeepalive": "0",
+          "address": "18.13.1.2/32",
+          "dns": "9.9.9.9",
+          "allowedIPs": "",
+          "enable": true
+        },
+        "3c37d7cc-c1f5-479a-9a99-3171c0911fec": {
+          "name": "lelo",
+          "privateKey": "mDhC/vhG9c8/XZrYxkMvOs+YkUaJ09qoVt0DHgxSjXo=",
+          "publicKey": "0ZkoiSv5VY2UZAUQIGUyRJZfrp3790ogfCUcBzI262o=",
+          "presharedKey": "",
+          "persistentKeepalive": "0",
+          "address": "18.13.1.3/32",
+          "dns": "9.9.9.9",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        },
+        "acb77af6-e5a3-4d0f-bc78-0a3eb1cf7aff": {
+          "name": "pp",
+          "privateKey": "wLaAWMwr7L64Zs7gHEmtwbwvwHJlZnRFIuR+zh+5X1E=",
+          "publicKey": "erZW+F0vHtDAkJXJFJIc5KNuBkv56pz9IhMYapK4LRQ=",
+          "presharedKey": "xcVINQoqMdMfSZl7TpFDKXCP1vgK8iGdELxJk0OTBrk=",
+          "persistentKeepalive": "0",
+          "address": "18.13.1.4/32",
+          "dns": "9.9.9.9",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        }
+      }
+    },
+    "07143c22-8b80-4dad-89d7-78ef82b5783a": {
+      "name": "wg3",
+      "privateKey": "kImwap4g9f+cBnHKMiNJC7uSRF4eA7dfCKi0JC5jIVQ=",
+      "publicKey": "MdKeWxemutx1SnpKMbDn1l91AX5M2srutK7/YJUaTRs=",
+      "address": "10.0.0.1/24",
+      "port": "67890",
+      "dns": "1.1.1.1",
+      "endpoint": "111.222.33.4",
+      "enable": true,
+      "clients": {
+        "af18eb59-aaa2-42e6-bf6b-d34b7541bedf": {
+          "name": "pepe",
+          "privateKey": "UMgeEWntr0A7rzzeCOaWUN9u+vnAZiXx9LgoaHaaiHo=",
+          "publicKey": "EkkGrqks8rodL6nc0ZhY9t5BJSYFlmsZuqWV1bRuTFo=",
+          "presharedKey": "OlgkOGv32eo8tCKgd1+mFcOE99k7s8grDzMBiALXVlU=",
+          "persistentKeepalive": "0",
+          "address": "10.0.0.2/32",
+          "dns": "1.1.1.1",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": true
+        }
+      }
     }
   }
 }
