@@ -110,7 +110,9 @@ class Add_edit_server(ModalScreen):
         
     @on(Button.Pressed, "#btn_gen_key")
     def btn_gen_key(self, event: Button.Pressed) -> None:
-        self.gen_keys(False)
+        priv_key, pub_key = works.generate_keys()
+        self.query_one("#input_private_key", Input).value = priv_key
+        self.query_one("#input_public_key", Input).value = pub_key
  
     @on(Button.Pressed, "#btn_cancel")
     def cancelar(self, event: Button.Pressed) -> None:

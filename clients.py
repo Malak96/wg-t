@@ -92,11 +92,12 @@ class Add_edit_client(ModalScreen):
             self.query_one("#input_allowed_ips", Input).value = valor.get("allowedIPs", "") or ""
             self.query_one("#select_enabled", Select).value = valor.get("enable", False)
         else:
+            # Si es un nuevo cliente, se generan claves y se obtiene una dirección IP disponible.
             server_data = self.app_ref.wg_data.get("servers").get(self.id_server)
             cliens_data = self.app_ref.wg_data.get("servers").get(self.id_server).get("clients",{})
             #clients = server_data.get("clients",{})
             new_address_client = self.get_next_available_ip(cliens_data,server_data.get("address",{}))
-            """Genera una clave precompartida y la muestra en el campo correspondiente."""
+            #Genera una clave precompartida y la muestra en el campo correspondiente.
             psk = works.generate_preshared_key()
             priv_key, pub_key = works.generate_keys()
             self.query_one("#input_private_key", Input).value = priv_key
@@ -159,7 +160,8 @@ class Add_edit_client(ModalScreen):
             self.notify(f"Se guardo correctamente la configutacion de {self.query_one("#name", Input).value}",severity="information",title="Guardado")
             self.app.pop_screen()  # Cerrar la pantalla actual
         else:
-            self.notify("Ocurrio un error al guardar los datos no se guardo la configuracion.",severity="error",title="Error")
+            self.notify(f"[bold red]Error:[/bold red] Ocurrió un error al guardar los datos: {str(e)}",
+                         title="Error al guardar", severity="error")
         
     def save_data(self):
         try:
@@ -194,7 +196,8 @@ class Add_edit_client(ModalScreen):
         except ValueError:
             self.notify (f"[bold red]Error:[/bold red] No se pudo generar una ip de forma automatica para este cliente a partir de la ip del del seridor: {server_address}",
                          title="Dirección del servidor inválida", severity="warning")
-            return None
+            self.app.pop_screen()
+            return "0.0.0.0/32"
         used_ips = set()
         if clients_data:
             for client_details in clients_data.values():
@@ -204,12 +207,17 @@ class Add_edit_client(ModalScreen):
                         ip = ipaddress.ip_address(client_address.split('/')[0])  # Extraer solo la IP
                         used_ips.add(ip)
                     except ValueError:
-                        return ""
+                        self.notify(f"[bold red]Error:[/bold red] Dirección IP inválida del cliente: {client_address}",
+                                    title="Dirección IP inválida", severity="warning")
+                        self.app.pop_screen()
+                        return "0.0.0.0/32"  # Retornar una IP inválida si hay un error en la dirección del cliente
                         #self.notify(f"[yellow]Advertencia:[/yellow] Dirección IP inválida: {client_address}",severity="warning")
                         
         # Iterar sobre todas las IPs posibles en la subred, excluyendo la del servidor
         for ip in network.hosts():
             if ip != server_ip and ip not in used_ips:
                 return f"{ip}/32"  # Devuelve la IP con máscara /32
-
-        return ""  # No hay IPs disponibles
+        self.notify(f"[bold red]Error:[/bold red] No hay direcciones IP disponibles en la subred {server_address}",
+                    title="Sin IPs disponibles", severity="warning")
+        self.app.pop_screen()
+        return "0.0.0.0/32"  # No hay IPs disponibles

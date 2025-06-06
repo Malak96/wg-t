@@ -105,7 +105,7 @@ MainAppUI {
     align: center middle;
 }
 
-Add_edit_client, Add_edit_server {
+Add_edit_client, Add_edit_server, ConfirmModal {
     align: center middle;
 }
 .qr_container{
@@ -131,6 +131,27 @@ Add_edit_client, Add_edit_server {
     height: 40;
     border: thick rgb(255, 255, 255) 20%;
     background: $surface;
+}
+
+#ConfirmModal{
+    grid-size: 1;
+    grid-rows: 1fr;
+    width: 70;
+    height: 10;
+    border: thick rgb(255, 255, 255) 20%;
+    background: $surface;
+}
+.text-center{
+    align: center middle; /* Centra el contenido */
+    text-align: center; /* Centra el texto */
+    width: 1fr; /* Ocupa todo el ancho disponible */
+    height: 1fr; /* Ocupa todo el alto disponible */
+
+}
+#delete_buttons, #btn_confirm_msg, #btn_cancel_msg  {
+    width: 1fr; /* Ocupa todo el ancho disponible */
+    padding: 0;
+    align: center middle;
 }
 .label_edit_client {
     text-style: bold;

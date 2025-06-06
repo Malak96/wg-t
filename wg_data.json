@@ -11,7 +11,7 @@
       "endpoint": "mi_endpoint.com",
       "clients": {
         "2f505b2d-fafb-4eab-af56-03ba52e598b8": {
-          "name": "pepito",
+          "name": "pepito1",
           "privateKey": "wGH3lwpQrsSTN3CINj1Psqu6KHZ+JWFyF8kUbDaONl8=",
           "publicKey": "HaQRWVUKtk6E11MHXWlwI9rwNCBa3ux5XF/qI/3aPBQ=",
           "presharedKey": "hLZNIOZw+tLueP2uuQ1B5EA4iEs/GzTc7uAijrM8/L0=",
@@ -30,7 +30,7 @@
           "address": "10.10.1.3/32",
           "dns": "8.8.8.8",
           "allowedIPs": "",
-          "enable": true
+          "enable": false
         },
         "13d7fb82-d892-4b31-8f87-a936a91cbbe7": {
           "name": "benito_camelas",
@@ -75,6 +75,17 @@
           "dns": "8.8.8.8",
           "allowedIPs": "",
           "enable": true
+        },
+        "ce7f35eb-a57c-4d60-88da-ee936981ee0b": {
+          "name": "12345",
+          "privateKey": "6Az8JXtAvG4gnLaPfUEraXAMMOcvrBgGCogsxvUiEko=",
+          "publicKey": "NPaYPi4O4ABDlr95kF1Zr6Y9eyHAFN0P2KO2T86uPUQ=",
+          "presharedKey": "H/PDKDsTHNI/4pDjom3I7OPRhvSyGbtu6aGhLc48Sjk=",
+          "persistentKeepalive": "0",
+          "address": "10.10.1.5/32",
+          "dns": "8.8.8.8",
+          "allowedIPs": " 0.0.0.0/0, ::/0",
+          "enable": false
         }
       }
     },
@@ -97,7 +108,7 @@
           "address": "18.13.1.2/32",
           "dns": "9.9.9.9",
           "allowedIPs": "",
-          "enable": true
+          "enable": false
         },
         "3c37d7cc-c1f5-479a-9a99-3171c0911fec": {
           "name": "lelo",
@@ -111,7 +122,7 @@
           "enable": true
         },
         "acb77af6-e5a3-4d0f-bc78-0a3eb1cf7aff": {
-          "name": "pp",
+          "name": "ppll",
           "privateKey": "wLaAWMwr7L64Zs7gHEmtwbwvwHJlZnRFIuR+zh+5X1E=",
           "publicKey": "erZW+F0vHtDAkJXJFJIc5KNuBkv56pz9IhMYapK4LRQ=",
           "presharedKey": "xcVINQoqMdMfSZl7TpFDKXCP1vgK8iGdELxJk0OTBrk=",
@@ -134,7 +145,7 @@
       "enable": true,
       "clients": {
         "af18eb59-aaa2-42e6-bf6b-d34b7541bedf": {
-          "name": "pepe",
+          "name": "pepo",
           "privateKey": "UMgeEWntr0A7rzzeCOaWUN9u+vnAZiXx9LgoaHaaiHo=",
           "publicKey": "EkkGrqks8rodL6nc0ZhY9t5BJSYFlmsZuqWV1bRuTFo=",
           "presharedKey": "OlgkOGv32eo8tCKgd1+mFcOE99k7s8grDzMBiALXVlU=",

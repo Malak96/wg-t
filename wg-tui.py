@@ -96,31 +96,18 @@ class TerminalUI(App):
         selct_server = self.query_one("#select_server", Select)
         select_client = self.query_one("#select_client", Select)
         previous_value_server = selct_server.value
-        previous_value_client = select_client.value
+        self.previous_value_client = select_client.value
+
 
         # Recarga servidores
         selct_server.clear()
-        list_cl = [(instance["name"], id_) for id_, instance in self.wg_data["servers"].items()]
+        list_cl = [(server_id["name"], id_) for id_, server_id in self.wg_data["servers"].items()]
         selct_server.set_options(list_cl)
         # Restaurar selección de servidor
         if previous_value_server in self.wg_data["servers"]:
             selct_server.value = previous_value_server
-            self.notify(previous_value_server)
         else:
             selct_server.value = Select.BLANK
-
-        current_server = selct_server.value
-        clients_dict = self.wg_data["servers"].get(current_server, {}).get("clients", {})
-        select_client.clear()
-        list_clients = [(client_data.get("name", ""), client_id) for client_id, client_data in clients_dict.items()]
-        select_client.set_options(list_clients)
-        # Restaurar selección de cliente
-        if previous_value_client in clients_dict:
-            select_client.value = previous_value_client
-            self.notify(previous_value_client)
-        else:
-            select_client.value = Select.BLANK
-            self.notify("xx")
 
     async def on_mount(self) -> None:
         """Carga datos y refresca la lista al iniciar."""
@@ -153,72 +140,86 @@ class TerminalUI(App):
             self.wg_data = {"servers": {}}
     
     def on_switch_changed(self, event:Switch.Changed) -> None:
-        if event.switch.id == "enable_server":
-            self.wg_data["servers"][self.query_one("#select_server",Select).value]["enable"]= event.switch.value
-            self.notify("switch server")
-        elif event.switch.id == "enable_client":
-            self.wg_data["servers"][self.query_one("#select_server",Select).value]["clients"][self.query_one("#select_client",Select).value]["enable"]= event.switch.value
-            self.notify("switch client")
-            
-        with open("wg_data.json", 'w', encoding='utf-8') as f:
-                json.dump(self.wg_data, f, indent=2, ensure_ascii=False)
-
-    @on(Select.Changed, "#select_server")
-    def select_server_handler(self, event: Select.Changed) -> None:
-        """Actualiza el DataTable de clientes al seleccionar un cliente."""
-        selected_instance_id = event.value
-        slect_client = self.query_one("#select_client", Select)
-        if selected_instance_id is Select.BLANK or not self.wg_data.get("servers"):
-            slect_client.set_options([])
-            self.query_one("#select_client", Select).clear()
-            self.query_one("#input_pubkey", Label).update("")
-            self.query_one("#input_address", Label).update("")
-            self.query_one("#input_port", Label).update("")
-            self.query_one("#input_dns", Label).update("")
-            self.query_one("#input_endpoint", Label).update("")
+        try:
+            if event.switch.id == "enable_server":
+                self.wg_data["servers"][self.query_one("#select_server",Select).value]["enable"]= event.switch.value
+            elif event.switch.id == "enable_client":
+                self.wg_data["servers"][self.query_one("#select_server",Select).value]["clients"][self.query_one("#select_client",Select).value]["enable"]= event.switch.value
+                
+            with open("wg_data.json", 'w', encoding='utf-8') as f:
+                    json.dump(self.wg_data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            self.notify(f"Error al guardar el estado: {e}", severity="error", title="Error de Guardado")
             return
 
-        instance = self.wg_data.get("servers", {}).get(selected_instance_id)
-        if not instance:
-            self.notify(f"No se encontró el servidor seleccionado: {selected_instance_id}", severity="error", title="Error de Datos")
+
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        try:
+            """Manejador de eventos para cambios en los selectores."""
+            if event.select.id == "select_server":
+                selected_server_id = event.value
+                select_client = self.query_one("#select_client", Select)
+                if selected_server_id is Select.BLANK or not self.wg_data.get("servers"):
+                    select_client.clear()
+                    self.query_one("#select_client", Select).clear()
+                    self.query_one("#input_pubkey", Label).update("")
+                    self.query_one("#input_address", Label).update("")
+                    self.query_one("#input_port", Label).update("")
+                    self.query_one("#input_dns", Label).update("")
+                    self.query_one("#input_endpoint", Label).update("")
+                    return
+
+                server_id = self.wg_data.get("servers", {}).get(selected_server_id)
+                if not server_id:
+                    self.notify(f"No se encontró el servidor seleccionado: {selected_server_id}", severity="error", title="Error de Datos")
+                    return
+
+                self.query_one("#input_pubkey", Label).update(server_id.get("publicKey", ""))
+                self.query_one("#input_address", Label).update(server_id.get("address", ""))
+                self.query_one("#input_port", Label).update(str(server_id.get("port", "")))
+                self.query_one("#input_dns", Label).update(server_id.get("dns", ""))
+                self.query_one("#input_endpoint", Label).update(server_id.get("endpoint", ""))
+                self.query_one("#enable_server", Switch).value = server_id.get("enable", False)
+                
+                select_client.clear()
+                clients_dict = server_id.get("clients", {})
+                clients = []
+                for client_id, client_data in clients_dict.items():
+                    name_id = client_data.get("name", "")
+                    clients.append((name_id, client_id))
+                select_client.set_options(clients)
+                # Restaurar selección de cliente si existe
+                if self.previous_value_client in clients_dict:
+                    select_client.value = self.previous_value_client
+                else:
+                    select_client.value = Select.BLANK
+            elif event.select.id == "select_client":
+                server_id = self.query_one("#select_server", Select).value
+                selected_client_id = event.value
+
+                if selected_client_id is Select.BLANK or not self.wg_data.get("servers", {}).get(self.query_one("#select_server", Select).value, {}).get("clients", {}):
+                    self.query_one("#name_client", Label).update("")
+                    self.query_one("#input_pubkey_client", Label).update("")
+                    self.query_one("#input_address_client", Label).update("")
+                    self.query_one("#input_dns_client", Label).update("")
+                    return
+
+                client_data = self.wg_data.get("servers", {}).get(server_id, {}).get("clients", {}).get(selected_client_id, {})
+                if not client_data:
+                    self.notify(f"No se encontró el servidor cliente.", severity="error", title="Error de Datos")
+                    return
+
+                self.query_one("#name_client", Label).update(client_data.get("name", ""))
+                self.query_one("#input_pubkey_client", Label).update(client_data.get("publicKey", ""))
+                self.query_one("#input_address_client", Label).update(client_data.get("address", ""))
+                self.query_one("#input_dns_client", Label).update(client_data.get("dns", ""))
+                self.query_one("#enable_client", Switch).value = client_data.get("enable", False)
+        except Exception as e:
+            self.notify(f"Error con la selección: {e}", severity="error", title="Error de Selección")
             return
 
-        self.query_one("#input_pubkey", Label).update(instance.get("publicKey", ""))
-        self.query_one("#input_address", Label).update(instance.get("address", ""))
-        self.query_one("#input_port", Label).update(str(instance.get("port", "")))
-        self.query_one("#input_dns", Label).update(instance.get("dns", ""))
-        self.query_one("#input_endpoint", Label).update(instance.get("endpoint", ""))
-        
-        slect_client.clear()
-        clients_dict = instance.get("clients", {})
-        clients = []
-        for client_id, client_data in clients_dict.items():
-            name_id = client_data.get("name", "")
-            clients.append((name_id, client_id))
 
-        slect_client.set_options(clients)
-        self.notify("limpie!!")
-    
-    @on(Select.Changed, "#select_client")
-    def select_client_handler(self, event: Select.Changed) -> None:
-        server_id = self.query_one("#select_server", Select).value
-        selected_client_id = event.value
-        if selected_client_id is Select.BLANK or not self.wg_data.get("servers", {}).get(self.query_one("#select_server", Select).value, {}).get("clients", {}):
-            self.query_one("#name_client", Label).update("")
-            self.query_one("#input_pubkey_client", Label).update("")
-            self.query_one("#input_address_client", Label).update("")
-            self.query_one("#input_dns_client", Label).update("")
-            return
-
-        client_data = self.wg_data.get("servers", {}).get(server_id, {}).get("clients", {}).get(selected_client_id)
-        if not client_data:
-            self.notify(f"No se encontró el servidor cliente.", severity="error", title="Error de Datos")
-            return
-
-        self.query_one("#name_client", Label).update(client_data.get("name", ""))
-        self.query_one("#input_pubkey_client", Label).update(client_data.get("publicKey", ""))
-        self.query_one("#input_address_client", Label).update(client_data.get("address", ""))
-        self.query_one("#input_dns_client", Label).update(client_data.get("dns", ""))
   
     @on(Button.Pressed, "#add_client")
     def add_client_handler(self, event: Button.Pressed) -> None:
@@ -260,7 +261,7 @@ class TerminalUI(App):
         name = self.wg_data.get("servers",{}).get(selected_server.value,{}).get("name",{})
 
         modal = ConfirmModal(
-            f"¿Estás seguro de que deseas eliminar el Servidor '{name}'? Esta acción no se puede deshacer.",
+            f"¿Estás seguro de que deseas eliminar el Servidor '{name}'?\nEsta acción no se puede deshacer.",
             on_confirm=lambda: self.del_reg(selected_server.value, None, name)
         )
         self.push_screen(modal)
